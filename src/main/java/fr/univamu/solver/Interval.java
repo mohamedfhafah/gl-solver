@@ -1,8 +1,8 @@
 package fr.univamu.solver;
 
 public class Interval {
-	public static int MIN_VALUE = -1000000000;
-	public static int MAX_VALUE = +1000000000;
+	public static int MIN_VALUE = -1_000_000_000;
+	public static int MAX_VALUE = 1_000_000_000;
 
 	private int min = MIN_VALUE;
 	private int max = MAX_VALUE;
@@ -15,7 +15,7 @@ public class Interval {
 			this.min = min;
 			this.max = max;
 		} else {
-			this.min = +1;
+			this.min = 1;
 			this.max = -1;
 		}
 	}
@@ -35,13 +35,13 @@ public class Interval {
 		var oldMin = min;
 		var oldMax = max;
 		if (newMin > newMax) {
-			min = +1;
+			min = 1;
 			max = -1;
 		} else {
-			min = (newMin > min) ? newMin : min;
-			max = (newMax < max) ? newMax : max;
+			min = Integer.max(newMin, min);
+			max = Integer.min(newMax, max);
 			if (min > max) {
-				min = +1;
+				min = 1;
 				max = -1;
 			}
 		}
@@ -125,7 +125,7 @@ public class Interval {
 		}
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
-		int divisors[] = { i.min, -1, 1, i.max };
+		int[] divisors = { i.min, -1, 1, i.max };
 		for (int divisor : divisors) {
 			if (divisor == 0)
 				continue;
@@ -141,8 +141,7 @@ public class Interval {
 		return new Interval(min, max);
 	}
 
-	// XXXX
-	public Interval div2(Interval i) {
+	public Interval inverseMul(Interval i) {
 		if (isEmpty() || i.isEmpty()) {
 			return empty();
 		}
@@ -151,7 +150,7 @@ public class Interval {
 		}
 		int min = Integer.MAX_VALUE;
 		int max = Integer.MIN_VALUE;
-		int divisors[] = { i.min, -1, 1, i.max };
+		int[] divisors = { i.min, -1, 1, i.max };
 		for (int divisor : divisors) {
 			if (!i.contains(divisor))
 				continue;
@@ -165,14 +164,12 @@ public class Interval {
 
 		if (getSign() * i.getSign() == 1) {
 			// same sign, result is > 0
-			if (min <= 0)
-				min = 1;
+			min = Integer.max(1, min);
 		}
 
 		if (getSign() * i.getSign() == -1) {
 			// different sign, result is < 0
-			if (max >= 0)
-				max = -1;
+			max = Integer.min(-1, max);
 		}
 
 		return new Interval(min, max);
