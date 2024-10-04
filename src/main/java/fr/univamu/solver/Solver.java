@@ -50,6 +50,7 @@ public class Solver {
     private long nodesCounter = 0;
     private long maxNodes = 1000_000_000L;
     private boolean verbose = true;
+    private boolean modified = false;
 
     public void reduceAndCheckIntervalsStrategy() {
         strategy = REDUCE_AND_CHECK_INTERVALS_STRATEGY;
@@ -73,23 +74,6 @@ public class Solver {
         return (!ko);
     }
 
-    private boolean reduceAddConstraint(Constraint c) {
-        var change = c.getResult().reduce(c.getVar1().add(c.getVar2()));
-        change = c.getVar1().reduce(c.getResult().sub(c.getVar2())) || change;
-        change = c.getVar2().reduce(c.getResult().sub(c.getVar1())) || change;
-        return change;
-    }
-
-    private boolean reduceMulConstraint(Constraint c) {
-        var change = false;
-        for (int i = 0; i < 3; i++) {
-            change = c.getResult().reduce(c.getVar1().mul(c.getVar2())) || change;
-            change = c.getVar2().reduce(c.getResult().inverseMul(c.getVar1())) || change;
-            change = c.getVar1().reduce(c.getResult().inverseMul(c.getVar2())) || change;
-        }
-        return change;
-    }
-
     private boolean checkConstraintIntervalsStrategy(Constraint c) {
         return switch (c.getType()) {
             case '+' -> checkAddConstraintIntervalsStrategy(c);
@@ -100,12 +84,46 @@ public class Solver {
         };
     }
 
-    private boolean reduce(Constraint c) {
-        return switch (c.getType()) {
-            case '+' -> reduceAddConstraint(c);
-            case '*' -> reduceMulConstraint(c);
-            default -> false;
-        };
+    private void reduceAddConstraint(Constraint c) {
+        modified = c.getResult().reduce(c.getVar1().add(c.getVar2())) || modified;
+        modified = c.getVar1().reduce(c.getResult().sub(c.getVar2())) || modified;
+        modified = c.getVar2().reduce(c.getResult().sub(c.getVar1())) || modified;
+    }
+
+    private void reduceMulConstraint(Constraint c) {
+        for (int i = 0; i < 3; i++) {
+            modified = c.getResult().reduce(c.getVar1().mul(c.getVar2())) || modified;
+            modified = c.getVar2().reduce(c.getResult().inverseMul(c.getVar1())) || modified;
+            modified = c.getVar1().reduce(c.getResult().inverseMul(c.getVar2())) || modified;
+        }
+    }
+
+    private void reduce(Constraint c) {
+        switch (c.getType()) {
+            case '+':
+                reduceAddConstraint(c);
+                break;
+            case '*':
+                reduceMulConstraint(c);
+                break;
+        }
+    }
+
+    private void reduce() {
+        if (verbose) {
+            System.out.println("Variables before reduction:");
+            variables.forEach(System.out::println);
+        }
+
+        do {
+            modified = false;
+            constraints.forEach(this::reduce);
+        } while (modified);
+
+        if (verbose) {
+            System.out.println("Variables after reduction:");
+            variables.forEach(System.out::println);
+        }
     }
 
     private boolean checkConstraint(Constraint c) {
@@ -141,7 +159,7 @@ public class Solver {
         if (++nodesCounter > maxNodes) {
             throw new IllegalStateException("too many nodes");
         }
-        if (! checkConstraints()) {
+        if (!checkConstraints()) {
             return false;
         }
         var v = findVariable();
@@ -340,27 +358,6 @@ public class Solver {
             throw new IllegalArgumentException("bad expression: " + termsList);
         }
         return result;
-    }
-
-    private void reduce() {
-        if (verbose) {
-            System.out.println("Variables before reduction:");
-            variables.forEach(System.out::println);
-        }
-
-        for (boolean change = true; change; ) {
-            change = false;
-            for (Constraint c : constraints) {
-                if (reduce(c)) {
-                    change = true;
-                }
-            }
-        }
-
-        if (verbose) {
-            System.out.println("Variables after reduction:");
-            variables.forEach(System.out::println);
-        }
     }
 
     public long solve() {
