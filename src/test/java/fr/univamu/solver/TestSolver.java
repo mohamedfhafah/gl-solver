@@ -10,23 +10,23 @@ public class TestSolver {
 	@Test
 	public void testDomain() {
 		var solver = new Solver();
-		solver.newVar().domain(0, 9);
-		solver.newVar().domain(100, 109);
+		solver.newVar("X").domain(0, 9);
+		solver.newVar("Y").domain(100, 109);
 		assertEquals(100, solver.solve());
 	}
 
 	@Test
 	public void testDomainEmpty() {
 		var solver = new Solver();
-		solver.newVar().domain(20, 10);
+		solver.newVar("X").domain(20, 10);
 		assertEquals(0, solver.solve());
 	}
 
 	@Test
 	public void testConstraintAdd() {
 		var solver = new Solver();
-		var a = solver.newVar().domain(0, 9);
-		var b = solver.newVar().domain(0, 9);
+		var a = solver.newVar("a").domain(0, 9);
+		var b = solver.newVar("b").domain(0, 9);
 		solver.addConstraint(5, "=", a, "+", b);// 5=A+B
 		assertEquals(6, solver.solve());
 	}
@@ -34,8 +34,8 @@ public class TestSolver {
 	@Test
 	public void testConstraintSub() {
 		var solver = new Solver();
-		var a = solver.newVar().domain(0, 9);
-		var b = solver.newVar().domain(0, 9);
+		var a = solver.newVar("a").domain(0, 9);
+		var b = solver.newVar("b").domain(0, 9);
 		solver.addConstraint(5, "=", a, "-", b);// 5=A-B
 		assertEquals(5, solver.solve());
 	}
@@ -43,8 +43,8 @@ public class TestSolver {
 	@Test
 	public void testConstraintMul() {
 		var solver = new Solver();
-		var a = solver.newVar().domain(0, 9);
-		var b = solver.newVar().domain(0, 9);
+		var a = solver.newVar("a").domain(0, 9);
+		var b = solver.newVar("b").domain(0, 9);
 		solver.addConstraint(a, "=", b, "*", 2);// A=B*2
 		assertEquals(5, solver.solve());
 	}
@@ -52,8 +52,8 @@ public class TestSolver {
 	@Test
 	public void testConstraintDiv() {
 		var solver = new Solver();
-		var a = solver.newVar().domain(0, 99);
-		var b = solver.newVar().domain(0, 9);
+		var a = solver.newVar("a").domain(0, 99);
+		var b = solver.newVar("b").domain(0, 9);
 		solver.addConstraint(a, "=", b, "/", 2);// A=B/2
 		assertEquals(10, solver.solve());
 	}
@@ -61,8 +61,8 @@ public class TestSolver {
 	@Test
 	public void testConstraintEq() {
 		var solver = new Solver();
-		var a = solver.newVar().domain(0, 5);
-		var b = solver.newVar().domain(4, 9);
+		var a = solver.newVar("a").domain(0, 5);
+		var b = solver.newVar("b").domain(4, 9);
 		solver.addConstraint(a, "=", b);
 		assertEquals(2, solver.solve());
 	}

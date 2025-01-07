@@ -46,3 +46,7 @@ bin/
 /src/test/java/fr/univamu/solver/PrivateTestInterval.java
 /src/test/java/fr/univamu/solver/PrivateTestReducer.java
 /src/test/java/fr/univamu/solver/PrivateTestSolver.java
+/src/main/java/fr/univamu/solver/PrivateBuilder.java
+
+/src/main/java/fr/univamu/privateSolver/*
+/src/test/java/fr/univamu/privateSolver/*

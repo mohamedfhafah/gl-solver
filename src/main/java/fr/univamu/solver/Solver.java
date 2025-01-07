@@ -37,7 +37,7 @@ class Constraint {
     }
 }
 
-public class Solver {
+public class Solver implements ISolver {
 
     private static final int CHECK_INTERVALS_STRATEGY = 1;
     private static final int REDUCE_AND_CHECK_INTERVALS_STRATEGY = 2;
@@ -142,7 +142,7 @@ public class Solver {
         return true;
     }
 
-    public Variable findVariable() {
+    private Variable findVariable() {
         Variable best = null;
         for (Variable v : variables) {
             if (v.isFixed()) continue;
@@ -200,7 +200,7 @@ public class Solver {
         return result;
     }
 
-    public Variable newVar() {
+    private Variable newVar() {
         var v = new Variable(variables.size());
         variables.add(v);
         return v;
