@@ -3,12 +3,38 @@ package fr.univamu.solver;
 import java.util.LinkedList;
 import java.util.List;
 
-record Constraint(char type, Variable result, Variable var1, Variable var2) {
-    
+class Constraint {
+    final private char type;
+    final private Variable result;
+    final private Variable var1;
+    final private Variable var2;
+
     public String toString() {
         return String.format("%s(%s,%s,%s)", type, result, var1, var2);
     }
 
+    public Constraint(char type, Variable result, Variable var1, Variable var2) {
+        this.type = type;
+        this.result = result;
+        this.var1 = var1;
+        this.var2 = var2;
+    }
+
+    public char getType() {
+        return type;
+    }
+
+    public Variable getResult() {
+        return result;
+    }
+
+    public Variable getVar1() {
+        return var1;
+    }
+
+    public Variable getVar2() {
+        return var2;
+    }
 }
 
 public class Solver implements ISolver {
@@ -31,25 +57,25 @@ public class Solver implements ISolver {
     }
 
     private boolean checkAddConstraintIntervalsStrategy(Constraint c) {
-        return c.var1().add(c.var2()).inter(c.result()).isNotEmpty();
+        return c.getVar1().add(c.getVar2()).inter(c.getResult()).isNotEmpty();
     }
 
     private boolean checkMulConstraintIntervalsStrategy(Constraint c) {
-        return c.var1().mul(c.var2()).inter(c.result()).isNotEmpty();
+        return c.getVar1().mul(c.getVar2()).inter(c.getResult()).isNotEmpty();
     }
 
     private boolean checkDivConstraintIntervalsStrategy(Constraint c) {
-        return c.var1().div(c.var2()).inter(c.result()).isNotEmpty();
+        return c.getVar1().div(c.getVar2()).inter(c.getResult()).isNotEmpty();
     }
 
     private boolean checkDiffConstraintIntervalsStrategy(Constraint c) {
-        var result = c.result();
-        var ko = result.equals(c.var1()) && result.isOneValue();
+        var result = c.getResult();
+        var ko = result.equals(c.getVar1()) && result.isOneValue();
         return (!ko);
     }
 
     private boolean checkConstraintIntervalsStrategy(Constraint c) {
-        return switch (c.type()) {
+        return switch (c.getType()) {
             case '+' -> checkAddConstraintIntervalsStrategy(c);
             case '#' -> checkDiffConstraintIntervalsStrategy(c);
             case '*' -> checkMulConstraintIntervalsStrategy(c);
@@ -59,21 +85,21 @@ public class Solver implements ISolver {
     }
 
     private void reduceAddConstraint(Constraint c) {
-        modified = c.result().reduce(c.var1().add(c.var2())) || modified;
-        modified = c.var1().reduce(c.result().sub(c.var2())) || modified;
-        modified = c.var2().reduce(c.result().sub(c.var1())) || modified;
+        modified = c.getResult().reduce(c.getVar1().add(c.getVar2())) || modified;
+        modified = c.getVar1().reduce(c.getResult().sub(c.getVar2())) || modified;
+        modified = c.getVar2().reduce(c.getResult().sub(c.getVar1())) || modified;
     }
 
     private void reduceMulConstraint(Constraint c) {
         for (int i = 0; i < 3; i++) {
-            modified = c.result().reduce(c.var1().mul(c.var2())) || modified;
-            modified = c.var2().reduce(c.result().inverseMul(c.var1())) || modified;
-            modified = c.var1().reduce(c.result().inverseMul(c.var2())) || modified;
+            modified = c.getResult().reduce(c.getVar1().mul(c.getVar2())) || modified;
+            modified = c.getVar2().reduce(c.getResult().inverseMul(c.getVar1())) || modified;
+            modified = c.getVar1().reduce(c.getResult().inverseMul(c.getVar2())) || modified;
         }
     }
 
     private void reduce(Constraint c) {
-        switch (c.type()) {
+        switch (c.getType()) {
             case '+':
                 reduceAddConstraint(c);
                 break;
@@ -352,3 +378,4 @@ public class Solver implements ISolver {
     }
 
 }
+
