@@ -52,7 +52,7 @@ public class Interval {
 		return (min <= max) ? (1 + max - min) : 0;
 	}
 
-	public boolean isFixed() {
+	public boolean isOneValue() {
 		return (min == max);
 	}
 
@@ -88,7 +88,20 @@ public class Interval {
 		return false;
 	}
 
-	static public Interval empty() {
+    public int getMin() {
+        return min;
+    }
+
+    public int getMax() {
+        return max;
+    }
+
+    public void init(int min, int max) {
+        this.min = min;
+        this.max = max;
+    }
+
+    static public Interval empty() {
 		return new Interval(+1, -1);
 	}
 
@@ -179,22 +192,6 @@ public class Interval {
 		var min = Integer.max(this.min, i.min);
 		var max = Integer.min(this.max, i.max);
 		return new Interval(min, max);
-	}
-
-	public int getMin() {
-		return min;
-	}
-
-	public int getMax() {
-		return max;
-	}
-
-	public void setMin(int min) {
-		this.min = min;
-	}
-
-	public void setMax(int max) {
-		this.max = max;
 	}
 
 }

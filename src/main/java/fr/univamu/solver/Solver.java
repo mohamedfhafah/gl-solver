@@ -70,7 +70,7 @@ public class Solver implements ISolver {
 
     private boolean checkDiffConstraintIntervalsStrategy(Constraint c) {
         var result = c.getResult();
-        var ko = result.equals(c.getVar1()) && result.isFixed();
+        var ko = result.equals(c.getVar1()) && result.isOneValue();
         return (!ko);
     }
 
@@ -145,7 +145,7 @@ public class Solver implements ISolver {
     private Variable findVariable() {
         Variable best = null;
         for (Variable v : variables) {
-            if (v.isFixed()) continue;
+            if (v.isOneValue()) continue;
             if (best == null) {
                 best = v;
             } else if (v.getSize() < best.getSize()) {
@@ -155,12 +155,12 @@ public class Solver implements ISolver {
         return best;
     }
 
-    public boolean findSolutions() {
+    private void findSolutions() {
         if (++nodesCounter > maxNodes) {
             throw new IllegalStateException("too many nodes");
         }
         if (!checkConstraints()) {
-            return false;
+            return;
         }
         var v = findVariable();
         if (v == null) {
@@ -169,10 +169,9 @@ public class Solver implements ISolver {
                 variables.stream().filter(Variable::isNamed).forEach(System.out::println);
                 System.out.println();
             }
-            return true;
+            return;
         }
 
-        boolean result = false;
         int min = v.getMin();
         int max = v.getMax();
 
@@ -189,58 +188,59 @@ public class Solver implements ISolver {
 
         // explorer le domaine
         for (int value = min; value <= max; value += step) {
-            v.setMin(value);
-            v.setMax(Math.min(value + step - 1, max));
-            if (findSolutions()) {
-                result = true;
-            }
+            v.init(value, Math.min(value + step - 1, max));
+            findSolutions();
         }
-        v.setMin(min);
-        v.setMax(max);
-        return result;
+        v.init(min, max);
     }
 
-    private Variable newVar() {
-        var v = new Variable(variables.size());
+    private Variable newVar(int min, int max) {
+        var v = new Variable();
         variables.add(v);
+        v.init(min, max);
         return v;
     }
 
-    public Variable newVar(String name) {
+    private Variable newVar() {
+        return newVar(Variable.MIN_VALUE, Variable.MAX_VALUE);
+    }
+
+    public Variable newVar(String name, int min, int max) {
         var v = new Variable(name);
+        v.init(min, max);
         variables.add(v);
         return v;
     }
 
     public Variable newConstant(int value) {
-        return newVar().domain(value);
+        return newVar(value, value);
     }
 
-    public void eq(Variable a, Variable b) {
+    private void eq(Variable a, Variable b) {
         sub(newConstant(0), a, b); // 0 = A - B
     }
 
-    public void gt(Variable a, Variable b) {
-        sub(newVar().domain(1, Variable.MAX_VALUE), a, b); // Z=A-B,Z>0
+    private void gt(Variable a, Variable b) {
+        sub(newVar(1, Variable.MAX_VALUE), a, b); // Z=A-B,Z>0
     }
 
-    public void get(Variable a, Variable b) {
-        sub(newVar().domain(0, Variable.MAX_VALUE), a, b); // Z=A-B, Z>=0
+    private void get(Variable a, Variable b) {
+        sub(newVar(0, Variable.MAX_VALUE), a, b); // Z=A-B, Z>=0
     }
 
-    public void lt(Variable a, Variable b) {
+    private void lt(Variable a, Variable b) {
         gt(b, a);
     }
 
-    public void let(Variable a, Variable b) {
+    private void let(Variable a, Variable b) {
         get(b, a);
     }
 
-    public void diff(Variable a, Variable b) {
+    private void diff(Variable a, Variable b) {
         constraints.add(new Constraint('#', a, b, null));
     }
 
-    public void allDiff(Variable... variables) {
+    public void addAllDiffRelation(Variable... variables) {
         for (int i = 0; i < variables.length; i++)
             for (int j = i + 1; j < variables.length; j++) {
                 diff(variables[i], variables[j]);
@@ -318,40 +318,35 @@ public class Solver implements ISolver {
         return first;
     }
 
-    public void addConstraint(Object... terms) {
-        var termsList = new LinkedList<>(List.of(terms));
-        var var1 = parseAdditionTerm(termsList);
-        var relation = termsList.removeFirst();
-        var var2 = parseAdditionTerm(termsList);
-        if (!termsList.isEmpty()) {
-            throw new IllegalArgumentException("bad expression: " + termsList);
-        }
-        if (relation instanceof String carRelation) {
-            switch (carRelation) {
-                case "=":
-                    eq(var1, var2);
-                    return;
-                case ">":
-                    gt(var1, var2);
-                    return;
-                case ">=":
-                    get(var1, var2);
-                    return;
-                case "<":
-                    lt(var1, var2);
-                    return;
-                case "<=":
-                    let(var1, var2);
-                    return;
-                case "<>":
-                    diff(var1, var2);
-                    return;
-            }
+    public void addRelation(Variable a, String relation, int constant) {
+        addRelation(a, relation, newConstant(constant));
+    }
+
+    public void addRelation(Variable a, String relation, Variable b) {
+        switch (relation) {
+            case "=":
+                eq(a, b);
+                return;
+            case ">":
+                gt(a, b);
+                return;
+            case ">=":
+                get(a, b);
+                return;
+            case "<":
+                lt(a, b);
+                return;
+            case "<=":
+                let(a, b);
+                return;
+            case "<>":
+                diff(a, b);
+                return;
         }
         throw new IllegalArgumentException("bad relation: " + relation);
     }
 
-    public Variable expression2(Object... terms) {
+    public Variable expression(Object... terms) {
         var termsList = new LinkedList<>(List.of(terms));
         var result = parseAdditionTerm(termsList);
         if (!termsList.isEmpty()) {
@@ -370,28 +365,12 @@ public class Solver implements ISolver {
         return solutionsCounter;
     }
 
-    public int getStrategy() {
-        return strategy;
-    }
-
     public long getNodesCounter() {
         return nodesCounter;
     }
 
-    public long getMaxNodes() {
-        return maxNodes;
-    }
-
-    public void setStrategy(int strategy) {
-        this.strategy = strategy;
-    }
-
     public void setMaxNodes(long maxNodes) {
         this.maxNodes = maxNodes;
-    }
-
-    public boolean isVerbose() {
-        return verbose;
     }
 
     public void setVerbose(boolean verbose) {

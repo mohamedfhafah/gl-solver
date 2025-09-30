@@ -2,12 +2,13 @@ package fr.univamu.solver;
 
 public class Variable extends Interval {
 
+    static private long anonymousCounter = 0;
 	final private String name;
 	final private boolean named;
 
-	public Variable(int _number) {
+	public Variable() {
 		named = false;
-		name = "_" + _number;
+		name = "_" + (++anonymousCounter);
 	}
 
 	public Variable(String _name) {
@@ -15,17 +16,8 @@ public class Variable extends Interval {
 		name = _name;
 	}
 
-	public Variable domain(int min, int max) {
-		reduce(min, max);
-		return this;
-	}
-
-	public Variable domain(int value) {
-		return domain(value, value);
-	}
-
 	public int getFixedValue() {
-		if (isFixed()) {
+		if (isOneValue()) {
 			return (getMin());
 		}
 		throw new IllegalStateException("variable not fixed: " + this);

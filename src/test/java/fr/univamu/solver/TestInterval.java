@@ -16,7 +16,7 @@ public class TestInterval {
 	@Test
 	void testFixed() {
 		var i = new Interval(20, 20);
-		assertTrue(i.isFixed());
+		assertTrue(i.isOneValue());
 	}
 
 	@Test
