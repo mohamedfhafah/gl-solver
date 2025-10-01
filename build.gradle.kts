@@ -2,7 +2,6 @@ plugins {
     id("java")
     id("application")
     id("jacoco")
-    id("org.barfuin.gradle.jacocolog") version "3.1.0"
 }
 
 group = "fr.univamu.solver"
@@ -45,5 +44,6 @@ tasks.jacocoTestReport {
 tasks.jacocoTestReport {
     reports {
         xml.required = true
+        csv.required = true
     }
 }
