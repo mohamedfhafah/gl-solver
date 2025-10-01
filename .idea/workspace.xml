@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a17b64ea-8b68-4cd2-aba6-1780c674b35e" name="Changes" comment="test">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,6 +130,7 @@
     "Gradle.Tests in 'fr.univamu.solver'.executor": "Run",
     "Gradle.gl-solver-2025-labourel [jacocoAggregatedReport].executor": "Run",
     "Gradle.gl-solver-2025-labourel [jacocoTestCoverageVerification].executor": "Run",
+    "Gradle.gl-solver-2025-labourel [jacocoTestReport].executor": "Run",
     "Gradle.gl-solver-2025-labourel [run].executor": "Run",
     "Gradle.gl-solver-2025-labourel [test].executor": "Run",
     "JUnit.TestAllDiff.executor": "Run",
@@ -166,28 +166,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Gradle.gl-solver-2025-labourel [test]">
-    <configuration name="Tests in 'GL-Solver'" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>true</RunAsTest>
-      <method v="2" />
-    </configuration>
     <configuration name="gl-solver-2025-labourel [jacocoAggregatedReport]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -222,6 +200,28 @@
         <option name="taskNames">
           <list>
             <option value="jacocoTestCoverageVerification" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="gl-solver-2025-labourel [jacocoTestReport]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="jacocoTestReport" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -290,10 +290,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Gradle.gl-solver-2025-labourel [test]" />
+        <item itemvalue="Gradle.gl-solver-2025-labourel [jacocoTestReport]" />
         <item itemvalue="Gradle.gl-solver-2025-labourel [jacocoAggregatedReport]" />
         <item itemvalue="Gradle.gl-solver-2025-labourel [jacocoTestCoverageVerification]" />
         <item itemvalue="Gradle.gl-solver-2025-labourel [run]" />
-        <item itemvalue="Gradle.Tests in 'GL-Solver'" />
       </list>
     </recent_temporary>
   </component>
@@ -460,7 +460,15 @@
       <option name="project" value="LOCAL" />
       <updated>1759306892475</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="test">
+      <option name="closed" value="true" />
+      <created>1759307380049</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1759307380049</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
