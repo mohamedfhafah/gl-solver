@@ -4,14 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a17b64ea-8b68-4cd2-aba6-1780c674b35e" name="Changes" comment="Clean">
+    <list default="true" id="a17b64ea-8b68-4cd2-aba6-1780c674b35e" name="Changes" comment="Version 2025">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/ISolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/ISolver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Interval.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Interval.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Solver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Solver.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Variable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Variable.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/fr/univamu/solver/TestInterval.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/univamu/solver/TestInterval.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/fr/univamu/solver/TestSolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/univamu/solver/TestSolver.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,60 +77,62 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Gradle.Build GL-Solver.executor": "Run",
-    "Gradle.GL-Solver [:fr.univamu.solver.Main.main()].executor": "Run",
-    "Gradle.GL-Solver [build].executor": "Run",
-    "Gradle.GL-Solver [clean].executor": "Run",
-    "Gradle.PrivateTestSolver.executor": "Run",
-    "Gradle.PrivateTestSolver.test4Students.executor": "Run",
-    "Gradle.PrivateTestSolver.testErrorSolution.executor": "Run",
-    "Gradle.PrivateTestSolver.testOpti.executor": "Run",
-    "Gradle.PrivateTestSolver.testOptiSimple.executor": "Run",
-    "Gradle.PrivateTestSolver.testQueens8.executor": "Run",
-    "Gradle.PrivateTestSolver.testReduction.executor": "Run",
-    "Gradle.TestAllDiff.test.executor": "Run",
-    "Gradle.TestLocalSolver (1).executor": "Run",
-    "Gradle.TestLocalSolver.allQueens.executor": "Run",
-    "Gradle.TestLocalSolver.executor": "Run",
-    "Gradle.TestLocalSolver.queens.executor": "Run",
-    "Gradle.TestLocalSolver.sendmory.executor": "Run",
-    "Gradle.TestLocalSolver.solve (1).executor": "Run",
-    "Gradle.TestLocalSolver.solve.executor": "Run",
-    "Gradle.TestLocalSolver.test.executor": "Run",
-    "Gradle.TestPrivateSolver.executor": "Run",
-    "Gradle.TestPrivateSolver.test1Students.executor": "Run",
-    "Gradle.TestPrivateSolver.test2Students.executor": "Run",
-    "Gradle.TestPrivateSolver.test4Students.executor": "Run",
-    "Gradle.TestPrivateSolver.testOpti.executor": "Run",
-    "Gradle.TestPrivateSolver.testOptimization.executor": "Run",
-    "Gradle.TestPrivateSolver.testPrivateSolver.executor": "Run",
-    "Gradle.TestPrivateSolver.testReduction.executor": "Run",
-    "Gradle.TestSolver.testABC.executor": "Run",
-    "Gradle.TestSolver.testConstraintMul2025.executor": "Run",
-    "Gradle.Tests in 'GL-Solver'.executor": "Run",
-    "Gradle.Tests in 'fr.univamu.solver'.executor": "Run",
-    "JUnit.TestAllDiff.executor": "Run",
-    "JUnit.TestAllDiff.test.executor": "Run",
-    "JUnit.TestSolver.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/massat/Intellij/RAN",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Gradle.Build GL-Solver.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GL-Solver [:fr.univamu.solver.Main.main()].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GL-Solver [build].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.GL-Solver [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestInterval.testBuildAllIntervals.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestInterval.testIntervalAdd.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestSolver.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestSolver.test4Students.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestSolver.testErrorSolution.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestSolver.testOpti.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestSolver.testOptiSimple.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestSolver.testQueens8.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.PrivateTestSolver.testReduction.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestAllDiff.test.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLocalSolver (1).executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLocalSolver.allQueens.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLocalSolver.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLocalSolver.queens.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLocalSolver.sendmory.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLocalSolver.solve (1).executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLocalSolver.solve.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestLocalSolver.test.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestPrivateSolver.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestPrivateSolver.test1Students.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestPrivateSolver.test2Students.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestPrivateSolver.test4Students.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestPrivateSolver.testOpti.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestPrivateSolver.testOptimization.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestPrivateSolver.testPrivateSolver.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestPrivateSolver.testReduction.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestSolver.testABC.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.TestSolver.testConstraintMul2025.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Tests in 'GL-Solver'.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Tests in 'fr.univamu.solver'.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.TestAllDiff.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.TestAllDiff.test.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.TestSolver.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/massat/Intellij/mars-rover-2025&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/java/fr/univamu/xxxx" />
@@ -147,30 +143,8 @@
       <recent name="fr.univamu.xxxx" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.Tests in 'GL-Solver'">
-    <configuration name="GL-Solver [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="build" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>false</RunAsTest>
-      <method v="2" />
-    </configuration>
-    <configuration name="TestLocalSolver.allQueens" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+  <component name="RunManager" selected="Gradle.PrivateTestInterval.testIntervalAdd">
+    <configuration name="PrivateTestInterval.testBuildAllIntervals" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -183,7 +157,31 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;fr.univamu.privateSolver.localsolver.TestLocalSolver.allQueens&quot;" />
+            <option value="&quot;fr.univamu.privateSolver.PrivateTestInterval.testBuildAllIntervals&quot;" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>true</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="PrivateTestInterval.testIntervalAdd" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+            <option value="--tests" />
+            <option value="&quot;fr.univamu.privateSolver.PrivateTestInterval.testIntervalAdd&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -257,11 +255,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.PrivateTestInterval.testIntervalAdd" />
+        <item itemvalue="Gradle.PrivateTestInterval.testBuildAllIntervals" />
         <item itemvalue="Gradle.Tests in 'GL-Solver'" />
         <item itemvalue="Gradle.TestSolver.testABC" />
         <item itemvalue="JUnit.TestSolver" />
-        <item itemvalue="Gradle.TestLocalSolver.allQueens" />
-        <item itemvalue="Gradle.GL-Solver [build]" />
       </list>
     </recent_temporary>
   </component>
@@ -329,7 +327,11 @@
       <workItem from="1756372357092" duration="159000" />
       <workItem from="1756471243318" duration="1249000" />
       <workItem from="1756741807993" duration="37000" />
-      <workItem from="1759212015814" duration="15133000" />
+      <workItem from="1759212015814" duration="15671000" />
+      <workItem from="1759233436852" duration="57000" />
+      <workItem from="1759247326415" duration="516000" />
+      <workItem from="1759303430167" duration="1931000" />
+      <workItem from="1759308516070" duration="4006000" />
     </task>
     <task id="LOCAL-00001" summary="Create">
       <option name="closed" value="true" />
@@ -387,7 +389,15 @@
       <option name="project" value="LOCAL" />
       <updated>1736266523716</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Version 2025">
+      <option name="closed" value="true" />
+      <created>1759232362848</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1759232362849</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -397,6 +407,7 @@
     <MESSAGE value="Create" />
     <MESSAGE value="Add tests" />
     <MESSAGE value="Clean" />
-    <option name="LAST_COMMIT_MESSAGE" value="Clean" />
+    <MESSAGE value="Version 2025" />
+    <option name="LAST_COMMIT_MESSAGE" value="Version 2025" />
   </component>
 </project>
