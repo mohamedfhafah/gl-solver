@@ -1,4 +1,4 @@
-image: gradle:jdk21-alpine
+image: gradle:jdk24-alpine
 
 stages:
   - build
@@ -19,8 +19,9 @@ tests:
   stage: test
   script:
     - gradle clean test
-    - gradle test
+  coverage: '/    - Instruction Coverage: ([0-9.]+)%/'
   artifacts:
-    when: always
     reports:
-      junit: build/test-results/test/**/TEST-*.xml
+      coverage_report:
+        coverage_format: jacoco
+        path: build/reports/jacoco/test/jacocoTestReport.xml

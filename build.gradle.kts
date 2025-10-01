@@ -1,6 +1,8 @@
 plugins {
     id("java")
     id("application")
+    id("jacoco")
+    id("org.barfuin.gradle.jacocolog") version "3.1.0"
 }
 
 group = "fr.univamu.solver"
@@ -30,4 +32,18 @@ tasks.withType<Jar> {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.test {
+    finalizedBy(tasks.jacocoTestReport) // report is always generated after tests run
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+    }
 }
