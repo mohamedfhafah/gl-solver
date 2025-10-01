@@ -1,4 +1,4 @@
-image: gradle:jdk25-alpine
+image: gradle:alpine
 
 stages:
   - build
