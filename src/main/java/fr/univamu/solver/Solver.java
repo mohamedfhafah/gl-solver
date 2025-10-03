@@ -1,7 +1,9 @@
 package fr.univamu.solver;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class Solver implements ISolver {
 
@@ -17,6 +19,10 @@ public class Solver implements ISolver {
     private long maxNodes = 1000_000_000L;
     private boolean verbose = true;
     private boolean modified = false;
+
+    // Pour l'optimisation des variables intermédiaires
+    private final Set<Variable> intermediateVariables = new HashSet<>();
+    private Variable pendingOptimizationResult = null;
 
     public void reduceAndCheckIntervalsStrategy() {
         strategy = REDUCE_AND_CHECK_INTERVALS_STRATEGY;
@@ -250,34 +256,46 @@ public class Solver implements ISolver {
         return false;
     }
 
-    private Variable parseMultiplicationTerm(List<Object> terms) {
+    private Variable parseMultiplicationTerm(List<Object> terms, boolean optimize) {
         var first = parseSimpleTerm(terms);
         if (parseToken("*", terms)) {
-            var second = parseMultiplicationTerm(terms);
+            var second = parseMultiplicationTerm(terms, optimize);
             var result = newVar();
+            if (optimize) {
+                markAsIntermediate(result); // Marquer comme variable intermédiaire
+            }
             mul(result, first, second);
             return result;
         }
         if (parseToken("/", terms)) {
-            var second = parseMultiplicationTerm(terms);
+            var second = parseMultiplicationTerm(terms, optimize);
             var result = newVar();
+            if (optimize) {
+                markAsIntermediate(result); // Marquer comme variable intermédiaire
+            }
             div(result, first, second);
             return result;
         }
         return first;
     }
 
-    private Variable parseAdditionTerm(List<Object> terms) {
-        var first = parseMultiplicationTerm(terms);
+    private Variable parseAdditionTerm(List<Object> terms, boolean optimize) {
+        var first = parseMultiplicationTerm(terms, optimize);
         if (parseToken("+", terms)) {
-            var second = parseAdditionTerm(terms);
+            var second = parseAdditionTerm(terms, optimize);
             var result = newVar();
+            if (optimize) {
+                markAsIntermediate(result); // Marquer comme variable intermédiaire
+            }
             add(result, first, second);
             return result;
         }
         if (parseToken("-", terms)) {
-            var second = parseAdditionTerm(terms);
+            var second = parseAdditionTerm(terms, optimize);
             var result = newVar();
+            if (optimize) {
+                markAsIntermediate(result); // Marquer comme variable intermédiaire
+            }
             add(first, result, second);
             return result;
         }
@@ -289,6 +307,15 @@ public class Solver implements ISolver {
     }
 
     public void addRelation(Variable a, String relation, Variable b) {
+        // Si 'a' est le résultat d'une expression optimisée, déclencher l'optimisation
+        if (pendingOptimizationResult != null && pendingOptimizationResult.equals(a)) {
+            // Appliquer l'optimisation avant d'ajouter la relation
+            optimizeIntermediateVariables(a);
+
+            // Nettoyer le marqueur d'optimisation
+            pendingOptimizationResult = null;
+        }
+
         switch (relation) {
             case "=":
                 eq(a, b);
@@ -313,12 +340,163 @@ public class Solver implements ISolver {
     }
 
     public Variable expression(Object... terms) {
+        return expression(false, terms);
+    }
+
+    /**
+     * Analyse une expression avec possibilité d'optimisation.
+     *
+     * @param optimize true pour activer l'élimination des variables intermédiaires
+     * @param terms termes de l'expression
+     * @return la variable résultat
+     */
+    public Variable expression(boolean optimize, Object... terms) {
         var termsList = new LinkedList<>(List.of(terms));
-        var result = parseAdditionTerm(termsList);
+        var result = parseAdditionTerm(termsList, optimize);
         if (!termsList.isEmpty()) {
             throw new IllegalArgumentException("bad expression: " + termsList);
         }
+
+        // L'optimisation doit être faite immédiatement après la création de l'expression,
+        // avant que d'autres relations soient ajoutées
+        if (optimize) {
+            // Marquer le résultat comme étant une expression optimisée
+            // L'optimisation se fera lors du prochain addRelation
+            pendingOptimizationResult = result;
+        }
+
         return result;
+    }
+
+    /**
+     * Marque une variable comme étant intermédiaire (candidate à l'élimination).
+     */
+    private void markAsIntermediate(Variable var) {
+        intermediateVariables.add(var);
+    }
+
+    /**
+     * Optimise les variables intermédiaires en les éliminant si possible.
+     * Cette méthode est appelée après l'analyse d'une expression optimisée.
+     *
+     * @param result la variable résultat de l'expression
+     */
+    private void optimizeIntermediateVariables(Variable result) {
+        // Pour chaque variable intermédiaire
+        for (Variable intermediate : intermediateVariables) {
+            if (canEliminateIntermediate(intermediate, result)) {
+                // Remplacer la variable intermédiaire dans sa contrainte de définition
+                substituteIntermediateVariable(null, intermediate, result);
+
+                // Supprimer la variable intermédiaire et ses contraintes associées
+                removeIntermediateVariable(intermediate);
+            }
+        }
+
+        // Nettoyer la liste des variables intermédiaires après optimisation
+        intermediateVariables.clear();
+    }
+
+    /**
+     * Cherche une contrainte d'égalité où la variable donnée est impliquée.
+     * Une égalité A = B est représentée comme 0 = A - B.
+     */
+    private Constraint findEqualityConstraint(Variable var) {
+        for (Constraint c : constraints) {
+            // Chercher une contrainte de soustraction où var est var1 et result est 0 (constante)
+            if (c.type() == '-' && c.var1().equals(var) && isConstantZero(c.result())) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Vérifie si une variable représente la constante 0.
+     */
+    private boolean isConstantZero(Variable var) {
+        return var.getMin() == 0 && var.getMax() == 0;
+    }
+
+    /**
+     * Vérifie si une variable intermédiaire peut être éliminée.
+     * Une variable peut être éliminée si elle n'est utilisée que dans une égalité simple.
+     */
+    private boolean canEliminateIntermediate(Variable intermediate, Variable result) {
+        // Compter combien de fois la variable intermédiaire est utilisée
+        int usageCount = 0;
+        boolean hasDefinition = false;
+        boolean hasEquality = false;
+
+        for (Constraint c : constraints) {
+            // Vérifier si c'est la contrainte de définition (intermediate est le résultat)
+            if (c.result().equals(intermediate)) {
+                hasDefinition = true;
+                usageCount++;
+            }
+            // Vérifier si c'est utilisé dans une égalité (représentée comme 0 = intermediate - something)
+            else if (c.type() == '-' && isConstantZero(c.result()) && c.var1().equals(intermediate)) {
+                hasEquality = true;
+                usageCount++;
+            }
+            // Vérifier si c'est utilisé ailleurs (comme opérande)
+            else if (c.var1().equals(intermediate) || (c.var2() != null && c.var2().equals(intermediate))) {
+                usageCount++;
+            }
+        }
+
+        // Peut être éliminée si elle a une définition ET une égalité, et n'est pas utilisée ailleurs
+        return hasDefinition && hasEquality && usageCount == 2;
+    }
+
+    /**
+     * Substitue une variable intermédiaire dans sa contrainte de définition.
+     * Transforme "intermediate = expression" en "target = expression"
+     */
+    private void substituteIntermediateVariable(Constraint equalityConstraint, Variable intermediate, Variable target) {
+        // Trouver la contrainte de définition de la variable intermédiaire
+        Constraint definitionConstraint = findDefinitionConstraint(intermediate);
+
+        if (definitionConstraint != null) {
+            // Créer une nouvelle contrainte avec target comme résultat
+            Constraint newConstraint = new Constraint(
+                definitionConstraint.type(),
+                target,  // Nouveau résultat
+                definitionConstraint.var1(),
+                definitionConstraint.var2()
+            );
+
+            // Remplacer la contrainte de définition
+            constraints.remove(definitionConstraint);
+            constraints.add(newConstraint);
+        }
+    }
+
+    /**
+     * Trouve la contrainte de définition d'une variable (où elle est le résultat).
+     */
+    private Constraint findDefinitionConstraint(Variable var) {
+        for (Constraint c : constraints) {
+            if (c.result().equals(var)) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Supprime une variable intermédiaire et toutes ses contraintes associées.
+     */
+    private void removeIntermediateVariable(Variable intermediate) {
+        // Supprimer toutes les contraintes qui utilisent cette variable
+        constraints.removeIf(c ->
+            c.var1().equals(intermediate) ||
+            c.result().equals(intermediate) ||
+            (c.var2() != null && c.var2().equals(intermediate))
+        );
+
+        // Supprimer la variable elle-même
+        variables.remove(intermediate);
     }
 
     /**

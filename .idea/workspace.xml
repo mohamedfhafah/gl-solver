@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="a17b64ea-8b68-4cd2-aba6-1780c674b35e" name="Changes" comment="Version 2025">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Solver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Solver.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -365,7 +366,7 @@
       <workItem from="1759247326415" duration="516000" />
       <workItem from="1759303430167" duration="1931000" />
       <workItem from="1759308516070" duration="4984000" />
-      <workItem from="1759497506484" duration="5228000" />
+      <workItem from="1759497506484" duration="7563000" />
     </task>
     <task id="LOCAL-00001" summary="Create">
       <option name="closed" value="true" />
