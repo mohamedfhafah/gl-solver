@@ -25,6 +25,11 @@ public class Main {
         // Comparaison finale avec l'exemple simple
         System.out.println("🏆 COMPARAISON FINALE - Cryptarithm AB + CD = EF");
         demonstrateSimpleComparison();
+
+        // Test de buildAllNotEmptyIntervals
+        System.out.println("\n" + "=".repeat(70) + "\n");
+        System.out.println("🧮 TEST ÉTAPE 2: buildAllNotEmptyIntervals [0,9]");
+        testBuildAllNotEmptyIntervals();
     }
 
     /**
@@ -270,5 +275,48 @@ public class Main {
             System.out.println("  Vérification: 9567 + 1085 = 10652 ✓");
         }
         System.out.println("  Complexité: ⭐⭐⭐ (Très difficile - classique !)");
+    }
+
+    /**
+     * Test de la méthode buildAllNotEmptyIntervals pour [0,9]
+     * Devrait produire 55 intervalles non vides
+     */
+    public static void testBuildAllNotEmptyIntervals() {
+        try {
+            // Créer une instance d'Interval pour accéder à la méthode privée
+            var intervalInstance = new Interval(0, 0);
+
+            // Utiliser la réflexion pour accéder à la méthode privée
+            var method = Interval.class.getDeclaredMethod("buildAllNotEmptyIntervals", int.class, int.class);
+            method.setAccessible(true);
+
+            @SuppressWarnings("unchecked")
+            var result = (java.util.List<Interval>) method.invoke(intervalInstance, 0, 9);
+
+            System.out.printf("📊 Nombre d'intervalles générés: %d%n", result.size());
+            System.out.println("✅ Attendu: 55 intervalles");
+
+            if (result.size() == 55) {
+                System.out.println("✅ SUCCÈS: La méthode buildAllNotEmptyIntervals fonctionne correctement!");
+
+                // Afficher quelques exemples
+                System.out.println("\n🔍 Quelques exemples d'intervalles générés:");
+                System.out.println("   • " + result.get(0));     // [0,0]
+                System.out.println("   • " + result.get(1));     // [0,1]
+                System.out.println("   • " + result.get(9));     // [0,9]
+                System.out.println("   • " + result.get(10));    // [1,1]
+                System.out.println("   • " + result.get(54));    // [9,9]
+
+                // Vérifier que tous sont non vides
+                boolean allNonEmpty = result.stream().allMatch(i -> !i.isEmpty());
+                System.out.println("   • Tous les intervalles sont non vides: " + (allNonEmpty ? "✅ OUI" : "❌ NON"));
+
+            } else {
+                System.out.println("❌ ÉCHEC: Nombre incorrect d'intervalles générés");
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ ERREUR lors du test: " + e.getMessage());
+        }
     }
 }

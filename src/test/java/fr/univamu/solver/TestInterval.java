@@ -3,8 +3,10 @@ package fr.univamu.solver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.function.BiFunction;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -262,6 +264,41 @@ public class TestInterval {
 		assertEquals(0, empty.getSize());
 		assertEquals(1, fixed.getSize());
 		assertEquals(7, normal.getSize()); // [2,8] = 7 valeurs
+	}
+
+	@Test
+	void testBuildAllNotEmptyIntervals() {
+		// Test de la méthode buildAllNotEmptyIntervals sur [0,9]
+		// Cette méthode est privée, nous testons donc indirectement
+		var testInterval = new Interval(0, 0); // Instance pour accéder à la méthode privée via réflexion
+
+		try {
+			var method = Interval.class.getDeclaredMethod("buildAllNotEmptyIntervals", int.class, int.class);
+			method.setAccessible(true);
+
+			@SuppressWarnings("unchecked")
+			List<Interval> result = (List<Interval>) method.invoke(testInterval, 0, 9);
+
+			// Vérifier qu'on obtient 55 intervalles
+			assertEquals(55, result.size());
+
+			// Vérifier quelques intervalles spécifiques
+			assertTrue(result.contains(new Interval(0, 0)));
+			assertTrue(result.contains(new Interval(0, 9)));
+			assertTrue(result.contains(new Interval(5, 5)));
+			assertTrue(result.contains(new Interval(5, 9)));
+			assertTrue(result.contains(new Interval(9, 9)));
+
+			// Vérifier que tous les intervalles sont non vides
+			for (Interval interval : result) {
+				assertFalse(interval.isEmpty());
+			}
+
+			System.out.println("✅ testBuildAllNotEmptyIntervals réussi: 55 intervalles générés pour [0,9]");
+
+		} catch (Exception e) {
+			fail("Erreur lors du test de buildAllNotEmptyIntervals: " + e.getMessage());
+		}
 	}
 
 }

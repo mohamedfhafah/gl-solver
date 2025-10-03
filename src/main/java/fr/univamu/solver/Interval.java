@@ -1,5 +1,8 @@
 package fr.univamu.solver;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class Interval {
 	public static int MIN_VALUE = -1_000_000_000;
 	public static int MAX_VALUE = 1_000_000_000;
@@ -192,6 +195,26 @@ public class Interval {
 		var min = Integer.max(this.min, i.min);
 		var max = Integer.min(this.max, i.max);
 		return new Interval(min, max);
+	}
+
+	/**
+	 * Étape 2 : Construire tous les intervalles possibles non vides.
+	 * @param min borne inférieure globale
+	 * @param max borne supérieure globale
+	 * @return liste de tous les intervalles [a,b] où min ≤ a ≤ b ≤ max
+	 */
+	private List<Interval> buildAllNotEmptyIntervals(int min, int max) {
+		List<Interval> result = new ArrayList<>();
+
+		// Pour chaque valeur de début possible
+		for (int start = min; start <= max; start++) {
+			// Pour chaque valeur de fin possible (de start à max)
+			for (int end = start; end <= max; end++) {
+				result.add(new Interval(start, end));
+			}
+		}
+
+		return result;
 	}
 
 }
