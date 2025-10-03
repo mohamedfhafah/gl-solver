@@ -48,6 +48,11 @@ public class Main {
         System.out.println("\n" + "=".repeat(70) + "\n");
         System.out.println("🧮 ÉTAPE 4: Tests Exhaustifs pour Toutes les Opérations");
         demonstrateAllOperations();
+
+        // Démonstration du nouveau record Constraint
+        System.out.println("\n" + "-".repeat(50));
+        System.out.println("📝 DÉMONSTRATION: Record Constraint");
+        demonstrateConstraintRecord();
     }
 
     /**
@@ -543,6 +548,45 @@ public class Main {
 
         } catch (Exception e) {
             System.out.println("❌ ERREUR lors de la démonstration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Démonstration des fonctionnalités du record Constraint
+     */
+    public static void demonstrateConstraintRecord() {
+        try {
+            // Création d'un record Constraint
+            Variable a = new Variable("A");
+            a.init(1, 9);
+            Variable b = new Variable("B");
+            b.init(0, 9);
+            Variable result = new Variable("RESULT");
+            result.init(0, 18);
+
+            Constraint addConstraint = new Constraint('+', result, a, b);
+
+            // Utilisation des méthodes d'accès (noms des champs)
+            System.out.printf("   Contrainte créée: %s%n", addConstraint);
+            System.out.printf("   Type d'opération: %s%n", addConstraint.type());
+            System.out.printf("   Variable résultat: %s%n", addConstraint.result().getName());
+            System.out.printf("   Première opérande: %s%n", addConstraint.var1().getName());
+            System.out.printf("   Deuxième opérande: %s%n", addConstraint.var2().getName());
+
+            // Égalité et hashCode automatiques
+            Constraint sameConstraint = new Constraint('+', result, a, b);
+            Constraint diffConstraint = new Constraint('*', result, a, b);
+
+            System.out.printf("   Égalité avec contrainte identique: %s%n", addConstraint.equals(sameConstraint));
+            System.out.printf("   Égalité avec contrainte différente: %s%n", addConstraint.equals(diffConstraint));
+
+            // Immuabilité garantie
+            System.out.println("   ✅ Immuabilité garantie par le record");
+            System.out.println("   ✅ Constructeur compact avec paramètres nommés");
+            System.out.println("   ✅ toString(), equals(), hashCode() automatiques");
+
+        } catch (Exception e) {
+            System.out.println("❌ ERREUR lors de la démonstration du record: " + e.getMessage());
         }
     }
 }

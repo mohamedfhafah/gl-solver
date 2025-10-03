@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a17b64ea-8b68-4cd2-aba6-1780c674b35e" name="Changes" comment="Version 2025">
-      <change beforePath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/fr/univamu/solver/TestInterval.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/univamu/solver/TestInterval.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Solver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Solver.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,6 +30,17 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="GL-Solver" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="GL-Solver" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="GL-Solver" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="verification" type="c8890929:TasksNode$1" />
               </path>
             </expand>
             <select />
@@ -126,6 +137,7 @@
     "Gradle.TestSolver.testConstraintMul2025.executor": "Run",
     "Gradle.Tests in 'GL-Solver'.executor": "Run",
     "Gradle.Tests in 'fr.univamu.solver'.executor": "Run",
+    "Gradle.gl-solver [jacocoTestReport].executor": "Run",
     "JUnit.TestAllDiff.executor": "Run",
     "JUnit.TestAllDiff.test.executor": "Run",
     "JUnit.TestSolver.executor": "Run",
@@ -156,7 +168,7 @@
       <recent name="fr.univamu.xxxx" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.TestInterval.testIntervalPropertiesCoverage">
+  <component name="RunManager" selected="Gradle.gl-solver [jacocoTestReport]">
     <configuration name="TestInterval.testDivisionEdgeCases" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -229,30 +241,6 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="TestInterval.testExhaustiveSubtraction" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" value="" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value=":test" />
-            <option value="--tests" />
-            <option value="&quot;fr.univamu.solver.TestInterval.testExhaustiveSubtraction&quot;" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <RunAsTest>true</RunAsTest>
-      <method v="2" />
-    </configuration>
     <configuration name="TestInterval.testIntervalPropertiesCoverage" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -277,13 +265,35 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
+    <configuration name="gl-solver [jacocoTestReport]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="jacocoTestReport" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.gl-solver [jacocoTestReport]" />
         <item itemvalue="Gradle.TestInterval.testIntervalPropertiesCoverage" />
         <item itemvalue="Gradle.TestInterval.testDivisionEdgeCases" />
         <item itemvalue="Gradle.TestInterval.testExhaustiveDivision" />
         <item itemvalue="Gradle.TestInterval.testExhaustiveMultiplication" />
-        <item itemvalue="Gradle.TestInterval.testExhaustiveSubtraction" />
       </list>
     </recent_temporary>
   </component>
@@ -356,7 +366,7 @@
       <workItem from="1759247326415" duration="516000" />
       <workItem from="1759303430167" duration="1931000" />
       <workItem from="1759308516070" duration="4984000" />
-      <workItem from="1759497506484" duration="1451000" />
+      <workItem from="1759497506484" duration="2812000" />
     </task>
     <task id="LOCAL-00001" summary="Create">
       <option name="closed" value="true" />
@@ -435,6 +445,17 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Create" />
