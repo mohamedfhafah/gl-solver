@@ -301,4 +301,73 @@ public class TestInterval {
 		}
 	}
 
+	@Test
+	void testExhaustiveAddition() {
+		// Étape 3: Test exhaustif de l'addition sur tous les intervalles de [-8,8]
+
+		try {
+			// Construire la liste de tous les intervalles non vides dans [-8,8]
+			var method = Interval.class.getDeclaredMethod("buildAllNotEmptyIntervals", int.class, int.class);
+			method.setAccessible(true);
+
+			@SuppressWarnings("unchecked")
+			List<Interval> allIntervals = (List<Interval>) method.invoke(new Interval(0, 0), -8, 8);
+
+			// Ajouter l'intervalle vide
+			allIntervals.add(Interval.empty());
+
+			System.out.printf("🧮 TEST EXHAUSTIF ADDITION: %d intervalles dans [-8,8] (incluant vide)%n", allIntervals.size());
+
+			int totalTests = 0;
+			int passedTests = 0;
+
+			// Tester chaque couple d'intervalles (a,b)
+			for (Interval a : allIntervals) {
+				for (Interval b : allIntervals) {
+					totalTests++;
+
+					try {
+						// Calcul par exploration exhaustive
+						Interval expected = exploreOperation(Integer::sum, a, b);
+
+						// Calcul par la méthode add() existante
+						Interval actual = a.add(b);
+
+						// Vérification que les résultats sont identiques
+						if (expected.equals(actual)) {
+							passedTests++;
+						} else {
+							System.out.printf("❌ ÉCHEC: %s + %s = %s (attendu) vs %s (add())%n",
+											a, b, expected, actual);
+							fail(String.format("Résultat incorrect pour %s + %s", a, b));
+						}
+
+						// Affichage périodique de progrès
+						if (totalTests % 1000 == 0) {
+							System.out.printf("  Progress: %d/%d tests (%.1f%%)%n",
+											totalTests, allIntervals.size() * allIntervals.size(),
+											100.0 * totalTests / (allIntervals.size() * allIntervals.size()));
+						}
+
+					} catch (Exception e) {
+						System.out.printf("❌ ERREUR lors du test %s + %s: %s%n", a, b, e.getMessage());
+						fail(String.format("Exception lors du test de %s + %s: %s", a, b, e.getMessage()));
+					}
+				}
+			}
+
+			System.out.printf("✅ RÉSULTAT FINAL: %d/%d tests réussis (%.1f%%)%n",
+							passedTests, totalTests, 100.0 * passedTests / totalTests);
+
+			if (passedTests == totalTests) {
+				System.out.println("🎉 SUCCÈS COMPLET: Tous les tests d'addition sont passés!");
+			} else {
+				fail(String.format("Échec: %d tests sur %d ont échoué", totalTests - passedTests, totalTests));
+			}
+
+		} catch (Exception e) {
+			fail("Erreur lors de la configuration du test exhaustif: " + e.getMessage());
+		}
+	}
+
 }
