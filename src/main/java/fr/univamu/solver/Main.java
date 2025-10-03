@@ -43,6 +43,11 @@ public class Main {
         System.out.println("\n" + "-".repeat(50));
         System.out.println("⚡ VALIDATION RAPIDE:");
         quickValidationTest();
+
+        // Étape 4: Tests exhaustifs pour toutes les opérations
+        System.out.println("\n" + "=".repeat(70) + "\n");
+        System.out.println("🧮 ÉTAPE 4: Tests Exhaustifs pour Toutes les Opérations");
+        demonstrateAllOperations();
     }
 
     /**
@@ -462,6 +467,82 @@ public class Main {
             System.out.println("🎯 SUCCÈS: L'arithmétique d'intervalles est cohérente!");
         } else {
             System.out.println("❌ ÉCHEC: Incohérences détectées");
+        }
+    }
+
+    /**
+     * Démonstration des tests exhaustifs pour toutes les opérations (échantillon)
+     */
+    public static void demonstrateAllOperations() {
+        try {
+            // Quelques intervalles représentatifs pour la démonstration
+            List<Interval> testIntervals = List.of(
+                new Interval(-3, -1),  // négatif
+                new Interval(0, 0),    // zéro
+                new Interval(2, 4),    // positif
+                Interval.empty()       // vide
+            );
+
+            String[] operations = {"+", "-", "×", "÷"};
+
+            System.out.printf("🔍 DÉMONSTRATION: Test des %d opérations sur %d intervalles représentatifs%n",
+                            operations.length, testIntervals.size());
+            System.out.println("   (Les tests complets sont disponibles dans TestInterval.java)");
+
+            for (String op : operations) {
+                System.out.printf("%n🧮 OPÉRATION %s:%n", op);
+                int total = 0;
+                int passed = 0;
+
+                for (Interval a : testIntervals) {
+                    for (Interval b : testIntervals) {
+                        total++;
+
+                        try {
+                            Interval result = switch (op) {
+                                case "+" -> exploreOperation(Integer::sum, a, b);
+                                case "-" -> exploreOperation((x, y) -> x - y, a, b);
+                                case "×" -> exploreOperation((x, y) -> x * y, a, b);
+                                case "÷" -> exploreOperation((x, y) -> {
+                                    if (y == 0) throw new ArithmeticException("Division by zero");
+                                    return x / y;
+                                }, a, b);
+                                default -> Interval.empty();
+                            };
+
+                            Interval expected = switch (op) {
+                                case "+" -> a.add(b);
+                                case "-" -> a.sub(b);
+                                case "×" -> a.mul(b);
+                                case "÷" -> a.div(b);
+                                default -> Interval.empty();
+                            };
+
+                            boolean success = result.equals(expected);
+                            if (success) passed++;
+
+                            if (total <= 4) { // Afficher seulement quelques exemples
+                                System.out.printf("   %s %s %s = %s %s%n",
+                                                a, op, b, expected, success ? "✅" : "❌");
+                            }
+
+                        } catch (Exception e) {
+                            // Pour la division, certaines combinaisons peuvent échouer
+                        }
+                    }
+                }
+
+                System.out.printf("   📊 Résultat %s: %d/%d tests réussis%n", op, passed, total);
+            }
+
+            System.out.println("%n💡 Les tests exhaustifs complets pour chaque opération sont disponibles:");
+            System.out.println("   • testExhaustiveAddition() - 84,100 tests");
+            System.out.println("   • testExhaustiveSubtraction() - 84,100 tests");
+            System.out.println("   • testExhaustiveMultiplication() - 84,100 tests");
+            System.out.println("   • testExhaustiveDivision() - 84,100 tests");
+
+        } catch (Exception e) {
+            System.out.println("❌ ERREUR lors de la démonstration: " + e.getMessage());
         }
     }
 }

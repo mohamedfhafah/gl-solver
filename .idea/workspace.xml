@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a17b64ea-8b68-4cd2-aba6-1780c674b35e" name="Changes" comment="Version 2025">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/fr/univamu/solver/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/fr/univamu/solver/TestInterval.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/fr/univamu/solver/TestInterval.java" afterDir="false" />
     </list>
@@ -100,8 +99,13 @@
     "Gradle.TestAllDiff.test.executor": "Run",
     "Gradle.TestInterval.executor": "Run",
     "Gradle.TestInterval.testBuildAllNotEmptyIntervals.executor": "Run",
+    "Gradle.TestInterval.testDivisionEdgeCases.executor": "Run",
     "Gradle.TestInterval.testExhaustiveAddition.executor": "Run",
+    "Gradle.TestInterval.testExhaustiveDivision.executor": "Run",
+    "Gradle.TestInterval.testExhaustiveMultiplication.executor": "Run",
+    "Gradle.TestInterval.testExhaustiveSubtraction.executor": "Run",
     "Gradle.TestInterval.testExploreOperationAddition.executor": "Run",
+    "Gradle.TestInterval.testIntervalPropertiesCoverage.executor": "Run",
     "Gradle.TestLocalSolver (1).executor": "Run",
     "Gradle.TestLocalSolver.allQueens.executor": "Run",
     "Gradle.TestLocalSolver.executor": "Run",
@@ -152,8 +156,8 @@
       <recent name="fr.univamu.xxxx" />
     </key>
   </component>
-  <component name="RunManager" selected="Gradle.TestInterval.testExhaustiveAddition">
-    <configuration name="PrivateTestInterval.testIntervalAdd" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+  <component name="RunManager" selected="Gradle.TestInterval.testIntervalPropertiesCoverage">
+    <configuration name="TestInterval.testDivisionEdgeCases" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -166,7 +170,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;fr.univamu.privateSolver.PrivateTestInterval.testIntervalAdd&quot;" />
+            <option value="&quot;fr.univamu.solver.TestInterval.testDivisionEdgeCases&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -177,7 +181,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="TestInterval" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="TestInterval.testExhaustiveDivision" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -190,7 +194,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;fr.univamu.solver.TestInterval&quot;" />
+            <option value="&quot;fr.univamu.solver.TestInterval.testExhaustiveDivision&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -201,7 +205,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="TestInterval.testBuildAllNotEmptyIntervals" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="TestInterval.testExhaustiveMultiplication" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -214,7 +218,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;fr.univamu.solver.TestInterval.testBuildAllNotEmptyIntervals&quot;" />
+            <option value="&quot;fr.univamu.solver.TestInterval.testExhaustiveMultiplication&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -225,7 +229,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="TestInterval.testExhaustiveAddition" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="TestInterval.testExhaustiveSubtraction" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -238,7 +242,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;fr.univamu.solver.TestInterval.testExhaustiveAddition&quot;" />
+            <option value="&quot;fr.univamu.solver.TestInterval.testExhaustiveSubtraction&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -249,7 +253,7 @@
       <RunAsTest>true</RunAsTest>
       <method v="2" />
     </configuration>
-    <configuration name="TestInterval.testExploreOperationAddition" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+    <configuration name="TestInterval.testIntervalPropertiesCoverage" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -262,7 +266,7 @@
           <list>
             <option value=":test" />
             <option value="--tests" />
-            <option value="&quot;fr.univamu.solver.TestInterval.testExploreOperationAddition&quot;" />
+            <option value="&quot;fr.univamu.solver.TestInterval.testIntervalPropertiesCoverage&quot;" />
           </list>
         </option>
         <option name="vmOptions" />
@@ -275,11 +279,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Gradle.TestInterval.testExhaustiveAddition" />
-        <item itemvalue="Gradle.TestInterval.testExploreOperationAddition" />
-        <item itemvalue="Gradle.TestInterval" />
-        <item itemvalue="Gradle.TestInterval.testBuildAllNotEmptyIntervals" />
-        <item itemvalue="Gradle.PrivateTestInterval.testIntervalAdd" />
+        <item itemvalue="Gradle.TestInterval.testIntervalPropertiesCoverage" />
+        <item itemvalue="Gradle.TestInterval.testDivisionEdgeCases" />
+        <item itemvalue="Gradle.TestInterval.testExhaustiveDivision" />
+        <item itemvalue="Gradle.TestInterval.testExhaustiveMultiplication" />
+        <item itemvalue="Gradle.TestInterval.testExhaustiveSubtraction" />
       </list>
     </recent_temporary>
   </component>
@@ -352,7 +356,7 @@
       <workItem from="1759247326415" duration="516000" />
       <workItem from="1759303430167" duration="1931000" />
       <workItem from="1759308516070" duration="4984000" />
-      <workItem from="1759497506484" duration="504000" />
+      <workItem from="1759497506484" duration="1451000" />
     </task>
     <task id="LOCAL-00001" summary="Create">
       <option name="closed" value="true" />

@@ -370,4 +370,192 @@ public class TestInterval {
 		}
 	}
 
+	/**
+	 * Étape 4: Méthode générique pour tester toutes les opérations binaires
+	 */
+	private void testBiOperation(BiFunction<Integer, Integer, Integer> intOp,
+	                             BiFunction<Interval, Interval, Interval> intervalOp,
+	                             String name) {
+		try {
+			// Construire la liste de tous les intervalles non vides dans [-8,8]
+			var method = Interval.class.getDeclaredMethod("buildAllNotEmptyIntervals", int.class, int.class);
+			method.setAccessible(true);
+
+			@SuppressWarnings("unchecked")
+			List<Interval> allIntervals = (List<Interval>) method.invoke(new Interval(0, 0), -8, 8);
+
+			// Ajouter l'intervalle vide
+			allIntervals.add(Interval.empty());
+
+			System.out.printf("🧮 TEST EXHAUSTIF %s: %d intervalles dans [-8,8] (incluant vide)%n",
+							name.toUpperCase(), allIntervals.size());
+
+			int totalTests = 0;
+			int passedTests = 0;
+
+			// Tester chaque couple d'intervalles (a,b)
+			for (Interval a : allIntervals) {
+				for (Interval b : allIntervals) {
+					totalTests++;
+
+					try {
+						// Calcul par exploration exhaustive
+						Interval expected = exploreOperation(intOp, a, b);
+
+						// Calcul par la méthode d'intervalle existante
+						Interval actual = intervalOp.apply(a, b);
+
+						// Vérification que les résultats sont identiques
+						if (expected.equals(actual)) {
+							passedTests++;
+						} else {
+							System.out.printf("❌ ÉCHEC: %s %s %s = %s (attendu) vs %s (%s())%n",
+											a, name, b, expected, actual, name.toLowerCase());
+							fail(String.format("Résultat incorrect pour %s %s %s", a, name, b));
+						}
+
+						// Affichage périodique de progrès (moins fréquent pour éviter spam)
+						if (totalTests % 5000 == 0) {
+							System.out.printf("  Progress: %d/%d tests (%.1f%%)%n",
+											totalTests, allIntervals.size() * allIntervals.size(),
+											100.0 * totalTests / (allIntervals.size() * allIntervals.size()));
+						}
+
+					} catch (Exception e) {
+						System.out.printf("❌ ERREUR lors du test %s %s %s: %s%n", a, name, b, e.getMessage());
+						fail(String.format("Exception lors du test de %s %s %s: %s", a, name, b, e.getMessage()));
+					}
+				}
+			}
+
+			System.out.printf("✅ RÉSULTAT FINAL %s: %d/%d tests réussis (%.1f%%)%n",
+							name.toUpperCase(), passedTests, totalTests, 100.0 * passedTests / totalTests);
+
+			if (passedTests == totalTests) {
+				System.out.printf("🎉 SUCCÈS COMPLET: Tous les tests %s sont passés!%n", name.toLowerCase());
+			} else {
+				fail(String.format("Échec %s: %d tests sur %d ont échoué", name, totalTests - passedTests, totalTests));
+			}
+
+		} catch (Exception e) {
+			fail("Erreur lors de la configuration du test exhaustif " + name + ": " + e.getMessage());
+		}
+	}
+
+	@Test
+	void testExhaustiveSubtraction() {
+		// Étape 4: Test exhaustif de la soustraction
+		testBiOperation((a, b) -> a - b, Interval::sub, "-");
+	}
+
+	@Test
+	void testExhaustiveMultiplication() {
+		// Étape 4: Test exhaustif de la multiplication
+		testBiOperation((a, b) -> a * b, Interval::mul, "×");
+	}
+
+	@Test
+	void testExhaustiveDivision() {
+		// Étape 4: Test exhaustif de la division (avec gestion des exceptions)
+		testBiOperation((a, b) -> {
+			if (b == 0) throw new ArithmeticException("Division by zero");
+			return a / b;
+		}, Interval::div, "÷");
+	}
+
+	@Test
+	void testDivisionEdgeCases() {
+		// Amélioration de la couverture pour la méthode div
+		System.out.println("🔍 TESTS SPÉCIFIQUES POUR LA MÉTHODE div()");
+
+		// Test division par intervalle contenant zéro
+		Interval a = new Interval(6, 12);
+		Interval b = new Interval(-2, 3); // contient zéro
+		Interval result = a.div(b);
+		System.out.println("   Division 6..12 ÷ (-2..3) = " + result);
+
+		// Test division par intervalle positif
+		Interval c = new Interval(8, 16);
+		Interval d = new Interval(2, 4);
+		Interval result2 = c.div(d);
+		System.out.println("   Division 8..16 ÷ (2..4) = " + result2);
+
+		// Test division par intervalle négatif
+		Interval e = new Interval(-16, -8);
+		Interval f = new Interval(-4, -2);
+		Interval result3 = e.div(f);
+		System.out.println("   Division -16..-8 ÷ (-4..-2) = " + result3);
+
+		// Test division par intervalle vide
+		Interval result4 = a.div(Interval.empty());
+		assertTrue(result4.isEmpty());
+		System.out.println("   Division par intervalle vide = " + result4);
+
+		// Test division d'intervalle vide
+		Interval result5 = Interval.empty().div(b);
+		assertTrue(result5.isEmpty());
+		System.out.println("   Division d'intervalle vide = " + result5);
+
+		System.out.println("✅ Tous les tests de division supplémentaires réussis!");
+	}
+
+	@Test
+	void testIntervalPropertiesCoverage() {
+		// Amélioration de la couverture pour les propriétés des intervalles
+		System.out.println("🔍 TESTS DE COUVERTURE POUR LES PROPRIÉTÉS D'INTERVALLE");
+
+		// Test des getters
+		Interval interval = new Interval(-5, 10);
+		assertEquals(-5, interval.getMin());
+		assertEquals(10, interval.getMax());
+		System.out.println("   Getters: min=" + interval.getMin() + ", max=" + interval.getMax());
+
+		// Test isNotEmpty
+		assertTrue(interval.isNotEmpty());
+		assertFalse(Interval.empty().isNotEmpty());
+		System.out.println("   isNotEmpty: " + interval.isNotEmpty());
+
+		// Test getSign pour différents cas
+		assertEquals(-1, new Interval(-5, -1).getSign()); // entièrement négatif
+		assertEquals(-1, new Interval(-2, -1).getSign()); // entièrement négatif
+		assertEquals(1, new Interval(1, 5).getSign());    // entièrement positif
+		assertEquals(0, new Interval(-2, 3).getSign());   // contient zéro
+		assertEquals(-1, Interval.empty().getSign());     // vide (max < 0)
+		System.out.println("   getSign testé pour tous les cas");
+
+		// Test isInside
+		Interval small = new Interval(2, 4);
+		Interval large = new Interval(1, 6);
+		assertTrue(small.isInside(large));
+		assertFalse(large.isInside(small));
+		System.out.println("   isInside: " + small + " est dans " + large + " = " + small.isInside(large));
+
+		System.out.println("✅ Tous les tests de propriétés réussis!");
+	}
+
+	@Test
+	void testInverseMulCoverage() {
+		// Amélioration de la couverture pour la méthode inverseMul
+		System.out.println("🔍 TESTS POUR LA MÉTHODE inverseMul()");
+
+		// Test multiplication inverse normale
+		Interval a = new Interval(6, 12);
+		Interval b = new Interval(2, 3);
+		Interval result = a.inverseMul(b);
+		System.out.println("   Inverse multiplication 6..12 ⊗ 2..3 = " + result);
+
+		// Test avec intervalle contenant zéro (devrait donner intervalle universel)
+		Interval c = new Interval(-2, 2); // contient zéro
+		Interval result2 = a.inverseMul(c);
+		assertFalse(result2.isEmpty()); // intervalle universel, pas vide
+		System.out.println("   Inverse multiplication avec zéro = " + result2);
+
+		// Test avec intervalles vides
+		Interval result3 = Interval.empty().inverseMul(b);
+		assertTrue(result3.isEmpty());
+		System.out.println("   Inverse multiplication d'intervalle vide = " + result3);
+
+		System.out.println("✅ Tous les tests inverseMul réussis!");
+	}
+
 }
