@@ -4,11 +4,11 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        //System.out.println("=== Suite de Cryptarithmes: Difficultés Progressives ===\n");
+        System.out.println("=== Suite de Cryptarithmes: Difficultés Progressives ===\n");
 
         // Niveau 1: Facile
-        //System.out.println("🎯 NIVEAU 1: Cryptarithm Simple");
-        //solveEasyCryptarithm();
+        System.out.println("🎯 NIVEAU 1: Cryptarithm Simple");
+        solveEasyCryptarithm();
 
         // Niveau 2: Intermédiaire
         System.out.println("\n" + "=".repeat(70) + "\n");
@@ -53,6 +53,11 @@ public class Main {
         System.out.println("\n" + "-".repeat(50));
         System.out.println("📝 DÉMONSTRATION: Record Constraint");
         demonstrateConstraintRecord();
+
+        // Test rapide de l'intégration ProblemBuilder dans Solver
+        System.out.println("\n" + "-".repeat(50));
+        System.out.println("🔧 TEST INTÉGRATION: ProblemBuilder + Solver");
+        testProblemBuilderIntegration();
     }
 
     /**
@@ -587,6 +592,39 @@ public class Main {
 
         } catch (Exception e) {
             System.out.println("❌ ERREUR lors de la démonstration du record: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Test d'intégration rapide : Solver utilise ProblemBuilder
+     */
+    public static void testProblemBuilderIntegration() {
+        try {
+            // Créer un petit problème simple : X + Y = Z où X,Y,Z dans [0,5]
+            Solver solver = new Solver();
+
+            Variable X = solver.newVar("X", 0, 5);
+            Variable Y = solver.newVar("Y", 0, 5);
+            Variable Z = solver.newVar("Z", 0, 10);
+
+            // Z = X + Y
+            Variable sum = solver.expression(X, "+", Y);
+            solver.addRelation(Z, "=", sum);
+
+            System.out.println("Problème créé: X + Y = Z (X,Y,Z ∈ [0,5]∩[0,10])");
+
+            // Activer le mode verbose pour voir le logging ProblemBuilder
+            solver.setVerbose(true);
+
+            // Résoudre - cela devrait utiliser ProblemBuilder en interne
+            long solutions = solver.solve();
+
+            System.out.printf("✅ Solutions trouvées: %d%n", solutions);
+            System.out.printf("✅ Nœuds explorés: %d%n", solver.getNodesCounter());
+            System.out.println("✅ L'intégration ProblemBuilder fonctionne !");
+
+        } catch (Exception e) {
+            System.out.println("❌ ERREUR lors du test d'intégration: " + e.getMessage());
         }
     }
 }

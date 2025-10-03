@@ -321,7 +321,45 @@ public class Solver implements ISolver {
         return result;
     }
 
+    /**
+     * Construit un Problem immuable à partir des données internes du Solver.
+     * Utilise ProblemBuilder pour créer une représentation structurée du problème.
+     */
+    private Problem buildProblem() {
+        var builder = new ProblemBuilder();
+
+        // Ajouter toutes les variables
+        for (Variable variable : variables) {
+            builder.addVariable(variable);
+        }
+
+        // Ajouter toutes les contraintes
+        for (Constraint constraint : constraints) {
+            builder.addConstraint(constraint);
+        }
+
+        // Configurer les paramètres
+        builder.setStrategy(strategy)
+               .setMaxNodes(maxNodes)
+               .setVerbose(verbose);
+
+        return builder.build();
+    }
+
     public long solve() {
+        // Construire le problème immuable avec ProblemBuilder
+        Problem problem = buildProblem();
+
+        // Log du problème construit (si verbose)
+        if (verbose) {
+            System.out.println("🔧 Problème construit avec ProblemBuilder:");
+            System.out.println("   • " + problem.getVariableCount() + " variables");
+            System.out.println("   • " + problem.getConstraintCount() + " contraintes");
+            System.out.println("   • Stratégie: " + problem.strategy());
+            System.out.println("   • Max nœuds: " + problem.maxNodes());
+        }
+
+        // Réinitialiser les compteurs et résoudre
         this.solutionsCounter = 0;
         this.nodesCounter = 0;
         if (strategy == REDUCE_AND_CHECK_INTERVALS_STRATEGY) {
