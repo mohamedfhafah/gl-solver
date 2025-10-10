@@ -28,7 +28,7 @@ public class TestProblemBuilder {
             .addVariable(varA)
             .addVariable(varB)
             .addVariable(varResult)
-            .addConstraint(new Constraint('+', varResult, varA, varB))
+            .addConstraint(new Constraint(ConstraintType.ADD, varResult, varA, varB))
             .build();
 
         assertEquals(3, problem.getVariableCount());
@@ -121,8 +121,8 @@ public class TestProblemBuilder {
             .addVariable(varA)
             .addVariable(varB)
             .addVariable(varResult)
-            .addConstraint(new Constraint('+', varResult, varA, varB))
-            .addConstraint(new Constraint('*', varResult, varA, varB))
+            .addConstraint(new Constraint(ConstraintType.ADD, varResult, varA, varB))
+            .addConstraint(new Constraint(ConstraintType.MUL, varResult, varA, varB))
             .setStrategy(Problem.REDUCE_AND_CHECK_INTERVALS_STRATEGY)
             .setMaxNodes(5000)
             .setVerbose(false)
@@ -146,7 +146,7 @@ public class TestProblemBuilder {
 
         // Ajout et vérification
         builder.addVariable(createVariable("A", 1, 9));
-        builder.addConstraint(new Constraint('+', createVariable("R", 0, 10),
+        builder.addConstraint(new Constraint(ConstraintType.ADD, createVariable("R", 0, 10),
                           createVariable("A", 1, 9), createVariable("B", 0, 9)));
 
         assertEquals(1, builder.getVariableCount());
@@ -196,12 +196,12 @@ public class TestProblemBuilder {
             .addVariable(A).addVariable(B).addVariable(C).addVariable(D)
             .addVariable(E).addVariable(F).addVariable(AB).addVariable(CD).addVariable(EF)
             // Contraintes arithmétiques
-            .addConstraint(new Constraint('+', AB, A, B))  // AB = A*10 + B
-            .addConstraint(new Constraint('+', CD, C, D))  // CD = C*10 + D
-            .addConstraint(new Constraint('+', EF, E, F))  // EF = E*10 + F
-            .addConstraint(new Constraint('+', EF, AB, CD)) // EF = AB + CD
+            .addConstraint(new Constraint(ConstraintType.ADD, AB, A, B))  // AB = A*10 + B
+            .addConstraint(new Constraint(ConstraintType.ADD, CD, C, D))  // CD = C*10 + D
+            .addConstraint(new Constraint(ConstraintType.ADD, EF, E, F))  // EF = E*10 + F
+            .addConstraint(new Constraint(ConstraintType.ADD, EF, AB, CD)) // EF = AB + CD
             // Contrainte all-different (simplifiée pour le test)
-            .addConstraint(new Constraint('#', A, B, null)) // A ≠ B
+            .addConstraint(new Constraint(ConstraintType.DIFF, A, B, null)) // A ≠ B
             // Configuration
             .setStrategy(Problem.REDUCE_AND_CHECK_INTERVALS_STRATEGY)
             .setMaxNodes(1000000)

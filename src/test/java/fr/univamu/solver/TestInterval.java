@@ -269,18 +269,12 @@ public class TestInterval {
 	@Test
 	void testBuildAllNotEmptyIntervals() {
 		// Test de la méthode buildAllNotEmptyIntervals sur [0,9]
-		// Cette méthode est privée, nous testons donc indirectement
-		var testInterval = new Interval(0, 0); // Instance pour accéder à la méthode privée via réflexion
+		var testInterval = new Interval(0, 0);
 
-		try {
-			var method = Interval.class.getDeclaredMethod("buildAllNotEmptyIntervals", int.class, int.class);
-			method.setAccessible(true);
+		List<Interval> result = testInterval.buildAllNotEmptyIntervals(0, 9);
 
-			@SuppressWarnings("unchecked")
-			List<Interval> result = (List<Interval>) method.invoke(testInterval, 0, 9);
-
-			// Vérifier qu'on obtient 55 intervalles
-			assertEquals(55, result.size());
+		// Vérifier qu'on obtient 55 intervalles (somme de 1 à 10 = 55)
+		assertEquals(55, result.size());
 
 			// Vérifier quelques intervalles spécifiques
 			assertTrue(result.contains(new Interval(0, 0)));
@@ -294,11 +288,7 @@ public class TestInterval {
 				assertFalse(interval.isEmpty());
 			}
 
-			System.out.println("✅ testBuildAllNotEmptyIntervals réussi: 55 intervalles générés pour [0,9]");
-
-		} catch (Exception e) {
-			fail("Erreur lors du test de buildAllNotEmptyIntervals: " + e.getMessage());
-		}
+		System.out.println("✅ testBuildAllNotEmptyIntervals réussi: 55 intervalles générés pour [0,9]");
 	}
 
 	@Test
@@ -307,11 +297,8 @@ public class TestInterval {
 
 		try {
 			// Construire la liste de tous les intervalles non vides dans [-8,8]
-			var method = Interval.class.getDeclaredMethod("buildAllNotEmptyIntervals", int.class, int.class);
-			method.setAccessible(true);
-
-			@SuppressWarnings("unchecked")
-			List<Interval> allIntervals = (List<Interval>) method.invoke(new Interval(0, 0), -8, 8);
+			var testInterval = new Interval(0, 0);
+			List<Interval> allIntervals = testInterval.buildAllNotEmptyIntervals(-8, 8);
 
 			// Ajouter l'intervalle vide
 			allIntervals.add(Interval.empty());
@@ -378,11 +365,8 @@ public class TestInterval {
 	                             String name) {
 		try {
 			// Construire la liste de tous les intervalles non vides dans [-8,8]
-			var method = Interval.class.getDeclaredMethod("buildAllNotEmptyIntervals", int.class, int.class);
-			method.setAccessible(true);
-
-			@SuppressWarnings("unchecked")
-			List<Interval> allIntervals = (List<Interval>) method.invoke(new Interval(0, 0), -8, 8);
+			var testInterval = new Interval(0, 0);
+			List<Interval> allIntervals = testInterval.buildAllNotEmptyIntervals(-8, 8);
 
 			// Ajouter l'intervalle vide
 			allIntervals.add(Interval.empty());

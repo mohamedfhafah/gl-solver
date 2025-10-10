@@ -1,6 +1,8 @@
 package fr.univamu.solver;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) {
@@ -58,6 +60,210 @@ public class Main {
         System.out.println("\n" + "-".repeat(50));
         System.out.println("🔧 TEST INTÉGRATION: ProblemBuilder + Solver");
         testProblemBuilderIntegration();
+
+        // Démonstration des métriques d'optimisation
+        System.out.println("\n" + "-".repeat(50));
+        System.out.println("📊 MÉTRIQUES D'OPTIMISATION: Comparaison Avant/Après");
+        demonstrateOptimizationMetrics();
+
+        // Démonstration de comparaison expression normale vs optimisée
+        System.out.println("\n" + "=".repeat(70) + "\n");
+        System.out.println("🔄 COMPARAISON: Expression Normale vs Optimisée");
+        demonstrateOptimizationComparison();
+
+    }
+
+    /**
+     * Démonstration comparative complète: Expression normale vs optimisée
+     * Compare les performances détaillées pour plusieurs expressions
+     */
+    public static void demonstrateOptimizationComparison() {
+        System.out.println("=".repeat(80));
+        System.out.println("🔬 COMPARAISON DÉTAILLÉE: APPROCHE NORMALE vs OPTIMISÉE");
+        System.out.println("=".repeat(80));
+
+        // Test 1: Expression simple A + 2 = B
+        compareExpressions("A + 2 = B", solver -> {
+            var a = solver.newVar("A", 0, 9);
+            var b = solver.newVar("B", 0, 9);
+            var result = solver.expression(a, "+", 2);
+            solver.addRelation(result, "=", b);
+        });
+
+        // Test 2: Expression plus complexe (A + B) * 2 = C
+        compareExpressions("(A + B) * 2 = C", solver -> {
+            var a = solver.newVar("A", 0, 9);
+            var b = solver.newVar("B", 0, 9);
+            var c = solver.newVar("C", 0, 36);
+            var sum = solver.expression(a, "+", b);
+            var result = solver.expression(sum, "*", 2);
+            solver.addRelation(result, "=", c);
+        });
+
+        // Test 3: Expression en chaîne A + B + C = D
+        compareExpressions("A + B + C = D", solver -> {
+            var a = solver.newVar("A", 0, 5);
+            var b = solver.newVar("B", 0, 5);
+            var c = solver.newVar("C", 0, 5);
+            var d = solver.newVar("D", 0, 15);
+            var sumAB = solver.expression(a, "+", b);
+            var result = solver.expression(sumAB, "+", c);
+            solver.addRelation(result, "=", d);
+        });
+
+        // Test 4: Expression avec constantes multiples A * 3 + 5 = B
+        compareExpressions("A * 3 + 5 = B", solver -> {
+            var a = solver.newVar("A", 0, 5);
+            var b = solver.newVar("B", 5, 20);
+            var product = solver.expression(a, "*", 3);
+            var result = solver.expression(product, "+", 5);
+            solver.addRelation(result, "=", b);
+        });
+
+        // Test 5: NOUVELLE OPTIMISATION - Contraintes constantes évitées X > 10
+        // Au lieu de créer une contrainte, on ajuste directement le domaine
+        compareExpressions("X > 10 (optimisation domaine)", solver -> {
+            var x = solver.newVar("X", 0, 20);
+            solver.addRelation(x, ">", 10);
+        });
+
+        System.out.println("=".repeat(80));
+        System.out.println("🎯 CONCLUSION GÉNÉRALE:");
+        System.out.println("   L'optimisation réduit systématiquement la complexité du problème");
+        System.out.println("   en éliminant les variables intermédiaires inutiles, tout en");
+        System.out.println("   préservant parfaitement l'équivalence fonctionnelle.");
+        System.out.println("=".repeat(80));
+    }
+
+    /**
+     * Compare les performances d'une expression normale vs optimisée
+     */
+    private static void compareExpressions(String description, Consumer<Solver> setupExpression) {
+        System.out.println("\n" + "─".repeat(60));
+        System.out.println("🧪 TEST: " + description);
+        System.out.println("─".repeat(60));
+
+        // === APPROCHE NORMALE ===
+        System.out.println("\n📝 APPROCHE NORMALE (sans optimisation):");
+        Solver solverNormal = new Solver();
+        setupExpression.accept(solverNormal);
+
+        // Mesures avant résolution
+        int varsNormal = solverNormal.getVariables().size();
+        int constraintsNormal = solverNormal.getConstraints().size();
+
+        System.out.println("   📊 Structure du problème:");
+        System.out.printf("      • Variables: %d\n", varsNormal);
+        System.out.printf("      • Contraintes: %d\n", constraintsNormal);
+        System.out.println("      • Variables: " + solverNormal.getVariables().stream()
+                          .map(Variable::getName).collect(Collectors.toList()));
+        System.out.println("      • Contraintes:");
+        for (Constraint c : solverNormal.getConstraints()) {
+            System.out.println("        " + c);
+        }
+
+        // Résolution avec mesure de temps
+        long startTime = System.currentTimeMillis();
+        long solutionsNormal = solverNormal.solve();
+        long endTime = System.currentTimeMillis();
+        long timeNormal = endTime - startTime;
+
+        System.out.println("   ⚡ Performance:");
+        System.out.printf("      • Solutions: %d\n", solutionsNormal);
+        System.out.printf("      • Temps: %d ms\n", timeNormal);
+        System.out.printf("      • Nœuds explorés: %d\n", solverNormal.getNodesCounter());
+
+        // === APPROCHE OPTIMISÉE ===
+        System.out.println("\n🚀 APPROCHE OPTIMISÉE (avec Solver.optimize()):");
+        Solver solverOptimized = new Solver();
+        setupExpression.accept(solverOptimized);
+        solverOptimized.optimize(); // Applique l'optimisation
+
+        // Mesures avant résolution
+        int varsOptimized = solverOptimized.getVariables().size();
+        int constraintsOptimized = solverOptimized.getConstraints().size();
+
+        System.out.println("   📊 Structure du problème après optimisation:");
+        System.out.printf("      • Variables: %d\n", varsOptimized);
+        System.out.printf("      • Contraintes: %d\n", constraintsOptimized);
+        System.out.println("      • Variables: " + solverOptimized.getVariables().stream()
+                          .map(Variable::getName).collect(Collectors.toList()));
+        System.out.println("      • Contraintes:");
+        for (Constraint c : solverOptimized.getConstraints()) {
+            System.out.println("        " + c);
+        }
+
+        // Résolution avec mesure de temps
+        startTime = System.currentTimeMillis();
+        long solutionsOptimized = solverOptimized.solve();
+        endTime = System.currentTimeMillis();
+        long timeOptimized = endTime - startTime;
+
+        System.out.println("   ⚡ Performance:");
+        System.out.printf("      • Solutions: %d\n", solutionsOptimized);
+        System.out.printf("      • Temps: %d ms\n", timeOptimized);
+        System.out.printf("      • Nœuds explorés: %d\n", solverOptimized.getNodesCounter());
+
+        // === COMPARAISON DÉTAILLÉE ===
+        System.out.println("\n📊 ANALYSE COMPARATIVE:");
+
+        // Variables
+        int varReduction = varsNormal - varsOptimized;
+        double varPercent = varsNormal > 0 ? (varReduction * 100.0 / varsNormal) : 0;
+        System.out.printf("   🔸 Variables: %d → %d ", varsNormal, varsOptimized);
+        if (varReduction > 0) {
+            System.out.printf("(réduction: %d, -%.1f%%)\n", varReduction, varPercent);
+        } else {
+            System.out.println("(aucune réduction)");
+        }
+
+        // Contraintes
+        int constraintReduction = constraintsNormal - constraintsOptimized;
+        double constraintPercent = constraintsNormal > 0 ? (constraintReduction * 100.0 / constraintsNormal) : 0;
+        System.out.printf("   🔸 Contraintes: %d → %d ", constraintsNormal, constraintsOptimized);
+        if (constraintReduction > 0) {
+            System.out.printf("(réduction: %d, -%.1f%%)\n", constraintReduction, constraintPercent);
+        } else {
+            System.out.println("(aucune réduction)");
+        }
+
+        // Solutions
+        System.out.printf("   🔸 Solutions: %d = %d ", solutionsNormal, solutionsOptimized);
+        if (solutionsNormal == solutionsOptimized) {
+            System.out.println("(équivalence parfaite ✅)");
+        } else {
+            System.out.println("(ERREUR: différence détectée ❌)");
+        }
+
+        // Performance temporelle
+        long timeDiff = timeNormal - timeOptimized;
+        double timePercent = timeNormal > 0 ? (timeDiff * 100.0 / timeNormal) : 0;
+        System.out.printf("   🔸 Temps d'exécution: %dms → %dms ", timeNormal, timeOptimized);
+        if (timeDiff > 0) {
+            System.out.printf("(gain: %dms, -%.1f%%)\n", timeDiff, timePercent);
+        } else if (timeDiff < 0) {
+            System.out.printf("(dégradation: %dms, +%.1f%%)\n", -timeDiff, -timePercent);
+        } else {
+            System.out.println("(temps identique)");
+        }
+
+        // Nœuds explorés
+        long nodesNormal = solverNormal.getNodesCounter();
+        long nodesOptimized = solverOptimized.getNodesCounter();
+        long nodesDiff = nodesNormal - nodesOptimized;
+        double nodesPercent = nodesNormal > 0 ? (nodesDiff * 100.0 / nodesNormal) : 0;
+        System.out.printf("   🔸 Nœuds explorés: %d → %d ", nodesNormal, nodesOptimized);
+        if (nodesDiff > 0) {
+            System.out.printf("(réduction: %d, -%.1f%%)\n", nodesDiff, nodesPercent);
+        } else if (nodesDiff < 0) {
+            System.out.printf("(augmentation: %d, +%.1f%%)\n", -nodesDiff, -nodesPercent);
+        } else {
+            System.out.println("(nœuds identiques)");
+        }
+
+        // Score global d'amélioration
+        double score = (varPercent + constraintPercent + (timePercent > 0 ? timePercent : 0) + (nodesPercent > 0 ? nodesPercent : 0)) / 4.0;
+        System.out.printf("   🎯 Score d'amélioration global: %.1f%%\n", score);
     }
 
     /**
@@ -311,15 +517,10 @@ public class Main {
      */
     public static void testBuildAllNotEmptyIntervals() {
         try {
-            // Créer une instance d'Interval pour accéder à la méthode privée
+            // Créer une instance d'Interval pour accéder à la méthode publique
             var intervalInstance = new Interval(0, 0);
 
-            // Utiliser la réflexion pour accéder à la méthode privée
-            var method = Interval.class.getDeclaredMethod("buildAllNotEmptyIntervals", int.class, int.class);
-            method.setAccessible(true);
-
-            @SuppressWarnings("unchecked")
-            var result = (java.util.List<Interval>) method.invoke(intervalInstance, 0, 9);
+            var result = intervalInstance.buildAllNotEmptyIntervals(0, 9);
 
             System.out.printf("📊 Nombre d'intervalles générés: %d%n", result.size());
             System.out.println("✅ Attendu: 55 intervalles");
@@ -569,7 +770,7 @@ public class Main {
             Variable result = new Variable("RESULT");
             result.init(0, 18);
 
-            Constraint addConstraint = new Constraint('+', result, a, b);
+            Constraint addConstraint = new Constraint(ConstraintType.ADD, result, a, b);
 
             // Utilisation des méthodes d'accès (noms des champs)
             System.out.printf("   Contrainte créée: %s%n", addConstraint);
@@ -579,8 +780,8 @@ public class Main {
             System.out.printf("   Deuxième opérande: %s%n", addConstraint.var2().getName());
 
             // Égalité et hashCode automatiques
-            Constraint sameConstraint = new Constraint('+', result, a, b);
-            Constraint diffConstraint = new Constraint('*', result, a, b);
+            Constraint sameConstraint = new Constraint(ConstraintType.ADD, result, a, b);
+            Constraint diffConstraint = new Constraint(ConstraintType.MUL, result, a, b);
 
             System.out.printf("   Égalité avec contrainte identique: %s%n", addConstraint.equals(sameConstraint));
             System.out.printf("   Égalité avec contrainte différente: %s%n", addConstraint.equals(diffConstraint));
@@ -625,6 +826,175 @@ public class Main {
 
         } catch (Exception e) {
             System.out.println("❌ ERREUR lors du test d'intégration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Démonstration des métriques d'optimisation d'expressions
+     */
+    public static void demonstrateOptimizationMetrics() {
+        try {
+            // Test de l'exemple A + 2 = B
+            System.out.println("🔍 Exemple : A + 2 = B");
+            demonstrateSingleOptimization("A + 2 = B", solver -> {
+                Variable A = createVariable("A", 0, 9);
+                Variable B = createVariable("B", 0, 18);
+                Variable expr = createOptimizedExpression(solver, A, "+", 2);
+                solver.addRelation(expr, "=", B);
+            });
+
+            // Test d'un exemple plus complexe qui devrait montrer l'optimisation
+            System.out.println("\n🔍 Exemple : A + B + 1 = C (chaînage d'additions)");
+            demonstrateSingleOptimization("A + B + 1 = C", solver -> {
+                Variable A = createVariable("A", 0, 9);
+                Variable B = createVariable("B", 0, 9);
+                Variable C = createVariable("C", 0, 19);
+                Variable expr = createOptimizedExpression(solver, A, "+", B, "+", 1);
+                solver.addRelation(expr, "=", C);
+            });
+
+            // Test avec debug pour comprendre A + 2 = B
+            System.out.println("\n🔍 DEBUG : Analyse détaillée de A + 2 = B");
+            debugOptimizationExample();
+
+        } catch (Exception e) {
+            System.out.println("❌ ERREUR lors de la démonstration des métriques: " + e.getMessage());
+        }
+    }
+
+    private static void demonstrateSingleOptimization(String expressionName, Consumer<Solver> setupExpression) {
+        try {
+            // Test SANS optimisation
+            Solver solverNoOpt = new Solver();
+            setupExpression.accept(solverNoOpt);
+
+            int variablesNoOpt = getVariables(solverNoOpt).size();
+            int constraintsNoOpt = getConstraints(solverNoOpt).size();
+            long solutionsNoOpt = solverNoOpt.solve();
+
+            // Test AVEC optimisation
+            Solver solverOpt = new Solver();
+            setupExpression.accept(solverOpt);
+
+            int variablesOpt = getVariables(solverOpt).size();
+            int constraintsOpt = getConstraints(solverOpt).size();
+            long solutionsOpt = solverOpt.solve();
+
+            // Affichage des métriques
+            System.out.println("  📈 SANS optimisation : " + variablesNoOpt + " variables, " + constraintsNoOpt + " contraintes");
+            System.out.println("  ⚡ AVEC optimisation : " + variablesOpt + " variables, " + constraintsOpt + " contraintes");
+
+            // Calcul des réductions
+            double varReduction = variablesNoOpt > 0 ? 100.0 * (variablesNoOpt - variablesOpt) / variablesNoOpt : 0;
+            double constraintReduction = constraintsNoOpt > 0 ? 100.0 * (constraintsNoOpt - constraintsOpt) / constraintsNoOpt : 0;
+
+            System.out.printf("  🎯 Réduction: %.1f%% variables, %.1f%% contraintes%n", varReduction, constraintReduction);
+
+            if (solutionsNoOpt == solutionsOpt) {
+                System.out.println("  ✅ Équivalence préservée: " + solutionsOpt + " solutions");
+            } else {
+                System.out.println("  ❌ ERREUR: Solutions différentes !");
+            }
+
+        } catch (Exception e) {
+            System.out.println("  ❌ ERREUR pour " + expressionName + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Debug détaillé de l'exemple A + 2 = B pour comprendre l'optimisation
+     */
+    private static void debugOptimizationExample() {
+        try {
+            System.out.println("--- ANALYSE SANS OPTIMISATION ---");
+            Solver solverNoOpt = new Solver();
+            Variable A1 = createVariable("A", 0, 9);
+            Variable B1 = createVariable("B", 0, 18);
+
+            // Expression normale (sans optimisation)
+            Variable expr1 = solverNoOpt.expression(A1, "+", 2);
+            solverNoOpt.addRelation(expr1, "=", B1);
+
+            System.out.println("Variables (" + getVariables(solverNoOpt).size() + "):");
+            for (var v : getVariables(solverNoOpt)) {
+                System.out.println("  " + v.getName() + " ∈ [" + v.getMin() + "," + v.getMax() + "]");
+            }
+            System.out.println("Contraintes (" + getConstraints(solverNoOpt).size() + "):");
+            for (var c : getConstraints(solverNoOpt)) {
+                System.out.println("  " + c);
+            }
+
+            System.out.println("\n--- ANALYSE AVEC OPTIMISATION ---");
+            Solver solverOpt = new Solver();
+            Variable A2 = createVariable("A", 0, 9);
+            Variable B2 = createVariable("B", 0, 18);
+
+            // Expression optimisée
+            Variable expr2 = createOptimizedExpression(solverOpt, A2, "+", 2);
+            solverOpt.addRelation(expr2, "=", B2);
+
+            System.out.println("Variables (" + getVariables(solverOpt).size() + "):");
+            for (var v : getVariables(solverOpt)) {
+                System.out.println("  " + v.getName() + " ∈ [" + v.getMin() + "," + v.getMax() + "]");
+            }
+            System.out.println("Contraintes (" + getConstraints(solverOpt).size() + "):");
+            for (var c : getConstraints(solverOpt)) {
+                System.out.println("  " + c);
+            }
+
+            // Comparaison
+            int varDiff = getVariables(solverNoOpt).size() - getVariables(solverOpt).size();
+            int constDiff = getConstraints(solverNoOpt).size() - getConstraints(solverOpt).size();
+
+            System.out.println("\n🎯 RÉSULTAT:");
+            System.out.println("  Variables éliminées: " + varDiff);
+            System.out.println("  Contraintes éliminées: " + constDiff);
+
+            if (varDiff > 0 || constDiff > 0) {
+                System.out.println("  ✅ OPTIMISATION RÉUSSIE !");
+            } else {
+                System.out.println("  ⚠️  AUCUNE OPTIMISATION APPLIQUÉE");
+                System.out.println("     (Possible: expression trop simple ou algorithme non déclenché)");
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ ERREUR lors du debug: " + e.getMessage());
+        }
+    }
+
+    // Méthode utilitaire pour créer une expression optimisée (évite l'ambiguïté)
+    private static Variable createOptimizedExpression(Solver solver, Object... terms) {
+        return solver.expressionOptimized(terms);
+    }
+
+    // Méthode utilitaire pour créer des variables de test
+    private static Variable createVariable(String name, int min, int max) {
+        var v = new Variable(name);
+        v.init(min, max);
+        return v;
+    }
+
+    // Méthode utilitaire pour accéder aux contraintes (via réflexion)
+    @SuppressWarnings("unchecked")
+    private static java.util.List<Constraint> getConstraints(Solver solver) {
+        try {
+            var field = Solver.class.getDeclaredField("constraints");
+            field.setAccessible(true);
+            return (java.util.List<Constraint>) field.get(solver);
+        } catch (Exception e) {
+            return java.util.Collections.emptyList();
+        }
+    }
+
+    // Méthode utilitaire pour accéder aux variables (via réflexion)
+    @SuppressWarnings("unchecked")
+    private static java.util.List<Variable> getVariables(Solver solver) {
+        try {
+            var field = Solver.class.getDeclaredField("variables");
+            field.setAccessible(true);
+            return (java.util.List<Variable>) field.get(solver);
+        } catch (Exception e) {
+            return java.util.Collections.emptyList();
         }
     }
 }

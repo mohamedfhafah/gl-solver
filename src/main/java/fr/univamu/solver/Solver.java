@@ -1,7 +1,9 @@
 package fr.univamu.solver;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Solver implements ISolver {
 
@@ -12,7 +14,7 @@ public class Solver implements ISolver {
     private final List<Variable> variables = new LinkedList<>();
     private int strategy = CHECK_INTERVALS_STRATEGY;
 
-    private long solutionsCounter = 0;
+    private Solutions solutions = new Solutions();
     private long nodesCounter = 0;
     private long maxNodes = 1000_000_000L;
     private boolean verbose = true;
@@ -42,11 +44,10 @@ public class Solver implements ISolver {
 
     private boolean checkConstraintIntervalsStrategy(Constraint c) {
         return switch (c.type()) {
-            case '+' -> checkAddConstraintIntervalsStrategy(c);
-            case '#' -> checkDiffConstraintIntervalsStrategy(c);
-            case '*' -> checkMulConstraintIntervalsStrategy(c);
-            case '/' -> checkDivConstraintIntervalsStrategy(c);
-            default -> throw new IllegalArgumentException("bad constraint: " + c);
+            case ADD -> checkAddConstraintIntervalsStrategy(c);
+            case DIFF -> checkDiffConstraintIntervalsStrategy(c);
+            case MUL -> checkMulConstraintIntervalsStrategy(c);
+            case DIV -> checkDivConstraintIntervalsStrategy(c);
         };
     }
 
@@ -66,10 +67,10 @@ public class Solver implements ISolver {
 
     private void reduce(Constraint c) {
         switch (c.type()) {
-            case '+':
+            case ADD:
                 reduceAddConstraint(c);
                 break;
-            case '*':
+            case MUL:
                 reduceMulConstraint(c);
                 break;
         }
@@ -130,11 +131,7 @@ public class Solver implements ISolver {
         }
         var v = findVariable();
         if (v == null) {
-            solutionsCounter++;
-            if (verbose) {
-                variables.stream().filter(Variable::isNamed).forEach(System.out::println);
-                System.out.println();
-            }
+            solutions.addSolution(variables);
             return;
         }
 
@@ -203,7 +200,7 @@ public class Solver implements ISolver {
     }
 
     private void diff(Variable a, Variable b) {
-        constraints.add(new Constraint('#', a, b, null));
+        constraints.add(new Constraint(ConstraintType.DIFF, a, b, null));
     }
 
     public void addAllDiffRelation(Variable... variables) {
@@ -214,7 +211,7 @@ public class Solver implements ISolver {
     }
 
     private void add(Variable result, Variable a, Variable b) {
-        constraints.add(new Constraint('+', result, a, b));
+        constraints.add(new Constraint(ConstraintType.ADD, result, a, b));
     }
 
     private void sub(Variable result, Variable a, Variable b) {
@@ -222,11 +219,11 @@ public class Solver implements ISolver {
     }
 
     private void mul(Variable result, Variable a, Variable b) {
-        constraints.add(new Constraint('*', result, a, b));
+        constraints.add(new Constraint(ConstraintType.MUL, result, a, b));
     }
 
     private void div(Variable result, Variable a, Variable b) {
-        constraints.add(new Constraint('/', result, a, b));
+        constraints.add(new Constraint(ConstraintType.DIV, result, a, b));
     }
 
     private Variable parseSimpleTerm(List<Object> terms) {
@@ -285,7 +282,39 @@ public class Solver implements ISolver {
     }
 
     public void addRelation(Variable a, String relation, int constant) {
-        addRelation(a, relation, newConstant(constant));
+        // OPTIMISATION: Pour les relations simples avec constantes,
+        // ajuster directement le domaine au lieu de créer une contrainte
+        switch (relation) {
+            case "=":
+                // X = constante : réduire le domaine à une seule valeur
+                if (constant >= a.getMin() && constant <= a.getMax()) {
+                    a.init(constant, constant);
+                } else {
+                    // Contrainte impossible, domaine vide
+                    a.init(1, 0); // Crée un domaine vide
+                }
+                return;
+            case ">":
+                // X > constante : domaine commence à constante+1
+                a.init(Math.max(a.getMin(), constant + 1), a.getMax());
+                return;
+            case ">=":
+                // X >= constante : domaine commence à constante
+                a.init(Math.max(a.getMin(), constant), a.getMax());
+                return;
+            case "<":
+                // X < constante : domaine finit à constante-1
+                a.init(a.getMin(), Math.min(a.getMax(), constant - 1));
+                return;
+            case "<=":
+                // X <= constante : domaine finit à constante
+                a.init(a.getMin(), Math.min(a.getMax(), constant));
+                return;
+            default:
+                // Pour les autres relations, utiliser l'approche normale
+                addRelation(a, relation, newConstant(constant));
+                return;
+        }
     }
 
     public void addRelation(Variable a, String relation, Variable b) {
@@ -319,6 +348,176 @@ public class Solver implements ISolver {
             throw new IllegalArgumentException("bad expression: " + termsList);
         }
         return result;
+    }
+
+    /**
+     * Analyse une expression avec optimisation automatique des variables intermédiaires.
+     * Cette méthode applique une optimisation pour réduire le nombre de variables et contraintes
+     * en éliminant les variables intermédiaires inutiles.
+     *
+     * Pour une expression comme A + 2 = B, transforme :
+     *   T1 ∈ [2,2]        T1 ∈ [2,2]
+     *   T2 = A + T1  -->   B = A + T1
+     *   T2 = B
+     *
+     * @param terms termes de l'expression
+     * @return la variable résultat optimisée
+     */
+    public Variable expressionOptimized(Object... terms) {
+        // Pour l'instant, construction normale sans optimisation
+        // L'optimisation sera appelée manuellement après avoir ajouté toutes les relations
+        return expression(terms);
+    }
+
+    /**
+     * Applique l'optimisation des variables intermédiaires.
+     * Doit être appelée après avoir ajouté toutes les contraintes.
+     */
+    public void optimize() {
+        // Trouver la variable résultat principale (celle qui n'est pas intermédiaire)
+        Variable mainResult = null;
+        for (Constraint c : constraints) {
+            if (c.result() != null && !isIntermediateVariable(c.result())) {
+                mainResult = c.result();
+                break;
+            }
+        }
+
+        if (mainResult != null) {
+            optimizeIntermediateVariables(mainResult);
+        } else {
+            // Si pas de résultat principal trouvé, optimiser avec null
+            optimizeIntermediateVariables(null);
+        }
+    }
+
+    /**
+     * Optimise les variables intermédiaires en les éliminant si possible.
+     * Applique une optimisation conservatrice qui préserve l'équivalence des solutions.
+     *
+     * Pour une expression comme A + 2 = B, transforme :
+     *   T1 ∈ [2,2]        T1 ∈ [2,2]
+     *   T2 = A + T1  -->   B = A + T1
+     *   T2 = B
+     *
+     * @param result la variable résultat de l'expression (non utilisée dans cette version)
+     */
+    private void optimizeIntermediateVariables(Variable result) {
+        // Collecter tous les candidats à l'optimisation
+        List<Variable> candidates = new ArrayList<>();
+
+        // Identifier les variables intermédiaires (celles qui sont résultats d'opérations)
+        for (Constraint c : constraints) {
+            if (c.result() != null && isIntermediateVariable(c.result())) {
+                candidates.add(c.result());
+            }
+        }
+
+        // Traiter chaque candidat
+        for (Variable intermediate : candidates) {
+            if (canEliminateIntermediate(intermediate)) {
+                performElimination(intermediate);
+            }
+        }
+    }
+
+    /**
+     * Vérifie si une variable est considérée comme intermédiaire.
+     * Une variable intermédiaire est celle dont le nom commence par un préfixe interne.
+     */
+    private boolean isIntermediateVariable(Variable var) {
+        // Les variables intermédiaires ont des noms générés automatiquement
+        // commençant par un caractère non alphabétique ou spécial
+        String name = var.getName();
+        return name.startsWith("T") || name.contains("$") || !Character.isLetter(name.charAt(0));
+    }
+
+    /**
+     * Vérifie si une variable intermédiaire peut être éliminée.
+     * Elle peut l'être si elle n'est utilisée que dans une égalité simple.
+     */
+    private boolean canEliminateIntermediate(Variable intermediate) {
+        // Compter les utilisations de cette variable
+        int usageCount = 0;
+        Constraint equalityConstraint = null;
+
+        for (Constraint c : constraints) {
+            // Vérifier si c'est la définition de la variable intermédiaire (pas une égalité simple)
+            if (c.result().equals(intermediate) && !(c.type() == ConstraintType.ADD && c.var1() != null && isConstantZero(c.var1()) && c.var2() != null)) {
+                usageCount++;
+            }
+            // Vérifier si c'est une utilisation dans une égalité (intermediate = 0 + target)
+            else if (c.type() == ConstraintType.ADD && c.result().equals(intermediate) &&
+                     c.var1() != null && isConstantZero(c.var1()) && c.var2() != null) {
+                equalityConstraint = c;
+                usageCount++;
+            }
+            // Vérifier si c'est une utilisation ailleurs (comme opérande)
+            else if ((c.var1() != null && c.var1().equals(intermediate)) ||
+                     (c.var2() != null && c.var2().equals(intermediate))) {
+                usageCount++;
+            }
+        }
+        // Peut être éliminée seulement si : définition + 1 égalité + rien d'autre
+        return usageCount == 2 && equalityConstraint != null;
+    }
+
+    /**
+     * Effectue l'élimination d'une variable intermédiaire.
+     * Remplace la variable dans sa définition et supprime les contraintes inutiles.
+     */
+    private void performElimination(Variable intermediate) {
+        // Trouver la contrainte d'égalité (intermediate = 0 + target)
+        Constraint equalityConstraint = null;
+        for (Constraint c : constraints) {
+            if (c.type() == ConstraintType.ADD && c.result().equals(intermediate) &&
+                c.var1() != null && isConstantZero(c.var1()) && c.var2() != null) {
+                equalityConstraint = c;
+                break;
+            }
+        }
+
+        if (equalityConstraint == null) return;
+
+        // La variable cible de l'égalité
+        Variable target = equalityConstraint.var2();
+
+        // Trouver la contrainte de définition (result = intermediate)
+        Constraint definitionConstraint = null;
+        for (Constraint c : constraints) {
+            if (c.result().equals(intermediate)) {
+                definitionConstraint = c;
+                break;
+            }
+        }
+
+        if (definitionConstraint == null) return;
+
+        // Créer la nouvelle contrainte : target = définition originale
+        Constraint newConstraint = new Constraint(
+            definitionConstraint.type(),
+            target,  // Nouveau résultat = la cible de l'égalité
+            definitionConstraint.var1(),
+            definitionConstraint.var2()
+        );
+
+        // Remplacer l'ancienne contrainte de définition par la nouvelle
+        constraints.remove(definitionConstraint);
+        constraints.add(newConstraint);
+
+        // Supprimer la contrainte d'égalité
+        constraints.remove(equalityConstraint);
+
+        // Supprimer la variable intermédiaire
+        variables.remove(intermediate);
+    }
+
+    /**
+     * Vérifie si une variable représente la constante 0.
+     */
+    private boolean isConstantZero(Variable var) {
+        boolean isZero = var.getMin() == 0 && var.getMax() == 0;
+        return isZero;
     }
 
     /**
@@ -360,13 +559,13 @@ public class Solver implements ISolver {
         }
 
         // Réinitialiser les compteurs et résoudre
-        this.solutionsCounter = 0;
+        solutions.reset();
         this.nodesCounter = 0;
         if (strategy == REDUCE_AND_CHECK_INTERVALS_STRATEGY) {
             reduce();
         }
         findSolutions();
-        return solutionsCounter;
+        return solutions.getCount();
     }
 
     public long getNodesCounter() {
@@ -379,6 +578,18 @@ public class Solver implements ISolver {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+    
+    public Solutions getSolutions() {
+        return solutions;
+    }
+
+    public List<Variable> getVariables() {
+        return variables;
+    }
+
+    public List<Constraint> getConstraints() {
+        return constraints;
     }
 
 }

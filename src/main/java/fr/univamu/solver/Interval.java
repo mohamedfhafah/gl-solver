@@ -203,7 +203,14 @@ public class Interval {
 	 * @param max borne supérieure globale
 	 * @return liste de tous les intervalles [a,b] où min ≤ a ≤ b ≤ max
 	 */
-	private List<Interval> buildAllNotEmptyIntervals(int min, int max) {
+	/**
+	 * Génère tous les intervalles non vides possibles entre min et max.
+	 * Méthode utilitaire pour les tests.
+	 * @param min borne inférieure
+	 * @param max borne supérieure
+	 * @return liste de tous les intervalles [a,b] avec min ≤ a ≤ b ≤ max
+	 */
+	public List<Interval> buildAllNotEmptyIntervals(int min, int max) {
 		List<Interval> result = new ArrayList<>();
 
 		// Pour chaque valeur de début possible

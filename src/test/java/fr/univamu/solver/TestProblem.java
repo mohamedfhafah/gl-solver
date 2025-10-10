@@ -20,7 +20,7 @@ public class TestProblem {
         );
 
         var constraints = List.of(
-            new Constraint('+', createVariable("RESULT", 0, 18), variables.get(0), variables.get(1))
+            new Constraint(ConstraintType.ADD, createVariable("RESULT", 0, 18), variables.get(0), variables.get(1))
         );
 
         var problem = new Problem(
@@ -110,7 +110,7 @@ public class TestProblem {
 
         // Modification des listes originales ne doit pas affecter le problème
         originalVariables.add(createVariable("B", 0, 5));
-        originalConstraints.add(new Constraint('+', createVariable("R", 0, 10),
+        originalConstraints.add(new Constraint(ConstraintType.ADD, createVariable("R", 0, 10),
             originalVariables.get(0), originalVariables.get(1)));
 
         // Le problème doit avoir conservé ses valeurs originales
@@ -139,7 +139,7 @@ public class TestProblem {
     @Test
     void testProblemToString() {
         var variables = List.of(createVariable("A", 1, 9));
-        var constraints = List.of(new Constraint('+', createVariable("R", 0, 10), variables.get(0), createVariable("B", 0, 9)));
+        var constraints = List.of(new Constraint(ConstraintType.ADD, createVariable("R", 0, 10), variables.get(0), createVariable("B", 0, 9)));
 
         var problem = new Problem(
             variables,

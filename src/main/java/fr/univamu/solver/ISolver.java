@@ -107,4 +107,12 @@ public interface ISolver {
      * @param verbose true to enable detailed logs, false to disable.
      */
     void setVerbose(boolean verbose);
+    
+    /**
+     * Returns the Solutions instance associated with the last solving process.
+     * This allows access to solution count, callbacks, and other solution management features.
+     *
+     * @return the Solutions instance for the last solve operation
+     */
+    Solutions getSolutions();
 }
