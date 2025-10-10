@@ -1,4 +1,7 @@
-package fr.univamu.solver;
+package fr.univamu.solver.engine;
+
+import fr.univamu.solver.api.ISolver;
+import fr.univamu.solver.domain.Variable;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,4 +1,14 @@
-package fr.univamu.solver;
+package fr.univamu.solver.engine;
+
+import fr.univamu.solver.api.ISolver;
+import fr.univamu.solver.api.ProblemBuilder;
+import fr.univamu.solver.domain.Constraint;
+import fr.univamu.solver.domain.ConstraintType;
+import fr.univamu.solver.domain.Problem;
+import fr.univamu.solver.domain.Variable;
+import fr.univamu.solver.strategy.DefaultStrategy;
+import fr.univamu.solver.strategy.IStrategy;
+import fr.univamu.solver.strategy.ReduceAndCheckIntervalsStrategy;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

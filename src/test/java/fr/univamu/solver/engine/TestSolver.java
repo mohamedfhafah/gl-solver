@@ -1,5 +1,8 @@
 
-package fr.univamu.solver;
+package fr.univamu.solver.engine;
+
+import fr.univamu.solver.api.ISolver;
+import fr.univamu.solver.domain.Variable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

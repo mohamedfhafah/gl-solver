@@ -1,4 +1,4 @@
-package fr.univamu.solver;
+package fr.univamu.solver.domain;
 
 import java.util.function.Consumer;
 
@@ -95,3 +95,4 @@ public class Variable extends Interval {
 	}
 
 }
+

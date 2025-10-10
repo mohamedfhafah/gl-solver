@@ -1,4 +1,4 @@
-package fr.univamu.solver;
+package fr.univamu.solver.domain;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -225,3 +225,4 @@ public class Interval {
 	}
 
 }
+

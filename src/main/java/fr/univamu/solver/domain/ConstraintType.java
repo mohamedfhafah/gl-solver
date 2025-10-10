@@ -1,4 +1,4 @@
-package fr.univamu.solver;
+package fr.univamu.solver.domain;
 
 /**
  * Enum représentant les types de contraintes supportés par le solveur.
@@ -25,3 +25,4 @@ public enum ConstraintType {
      */
     DIFF
 }
+

@@ -1,4 +1,6 @@
-package fr.univamu.solver;
+package fr.univamu.solver.engine;
+
+import fr.univamu.solver.domain.Variable;
 
 import java.util.List;
 import java.util.Map;
@@ -77,3 +79,4 @@ public class Solutions {
         this.count = 0;
     }
 }
+

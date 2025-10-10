@@ -1,4 +1,7 @@
-package fr.univamu.solver;
+package fr.univamu.solver.engine;
+
+import fr.univamu.solver.domain.Constraint;
+import fr.univamu.solver.domain.Variable;
 
 import java.util.List;
 
@@ -129,3 +132,4 @@ public class Checker {
         checkCounter = 0;
     }
 }
+

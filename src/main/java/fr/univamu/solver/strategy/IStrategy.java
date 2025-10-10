@@ -1,4 +1,7 @@
-package fr.univamu.solver;
+package fr.univamu.solver.strategy;
+
+import fr.univamu.solver.domain.Constraint;
+import fr.univamu.solver.domain.Variable;
 
 import java.util.List;
 
@@ -50,3 +53,4 @@ public interface IStrategy {
      */
     boolean check(List<Constraint> constraints, List<Variable> variables);
 }
+

@@ -1,4 +1,7 @@
-package fr.univamu.solver;
+package fr.univamu.solver.engine;
+
+import fr.univamu.solver.domain.Constraint;
+import fr.univamu.solver.domain.Variable;
 
 import java.util.List;
 import java.util.Set;
@@ -199,3 +202,4 @@ public class Reducer {
         return constraintsToStudy.size();
     }
 }
+

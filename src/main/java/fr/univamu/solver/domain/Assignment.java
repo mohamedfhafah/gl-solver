@@ -1,4 +1,4 @@
-package fr.univamu.solver;
+package fr.univamu.solver.domain;
 
 /**
  * Record représentant une affectation de variable dans une solution.
@@ -18,3 +18,4 @@ public record Assignment(String variableName, int value) {
         return String.format("%s = %d", variableName, value);
     }
 }
+

@@ -1,4 +1,8 @@
-package fr.univamu.solver;
+package fr.univamu.solver.strategy;
+
+import fr.univamu.solver.domain.Constraint;
+import fr.univamu.solver.domain.Variable;
+import fr.univamu.solver.engine.Checker;
 
 import java.util.List;
 
@@ -86,3 +90,4 @@ public class DefaultStrategy implements IStrategy {
         }
     }
 }
+

@@ -1,4 +1,7 @@
-package fr.univamu.solver;
+package fr.univamu.solver.api;
+
+import fr.univamu.solver.domain.Variable;
+import fr.univamu.solver.engine.Solutions;
 
 /**
  * Interface representing a constraint programming solver.
@@ -116,3 +119,4 @@ public interface ISolver {
      */
     Solutions getSolutions();
 }
+

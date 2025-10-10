@@ -1,5 +1,12 @@
 package fr.univamu.solver;
 
+import fr.univamu.solver.api.ISolver;
+import fr.univamu.solver.domain.Constraint;
+import fr.univamu.solver.domain.ConstraintType;
+import fr.univamu.solver.domain.Interval;
+import fr.univamu.solver.domain.Variable;
+import fr.univamu.solver.engine.Solver;
+
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;

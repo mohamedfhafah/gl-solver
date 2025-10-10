@@ -1,4 +1,4 @@
-package fr.univamu.solver;
+package fr.univamu.solver.domain;
 
 import java.util.List;
 import java.util.Objects;
@@ -106,3 +106,4 @@ public record Problem(
             variables.size(), constraints.size(), strategy, maxNodes, verbose);
     }
 }
+

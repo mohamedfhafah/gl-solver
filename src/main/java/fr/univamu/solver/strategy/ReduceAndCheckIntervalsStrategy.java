@@ -1,4 +1,9 @@
-package fr.univamu.solver;
+package fr.univamu.solver.strategy;
+
+import fr.univamu.solver.domain.Constraint;
+import fr.univamu.solver.domain.Variable;
+import fr.univamu.solver.engine.Checker;
+import fr.univamu.solver.engine.Reducer;
 
 import java.util.List;
 
@@ -55,3 +60,4 @@ public class ReduceAndCheckIntervalsStrategy extends DefaultStrategy {
         }
     }
 }
+

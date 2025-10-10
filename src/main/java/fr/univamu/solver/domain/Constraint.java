@@ -1,4 +1,4 @@
-package fr.univamu.solver;
+package fr.univamu.solver.domain;
 
 /**
  * Représente une contrainte entre variables dans le solveur de contraintes.
@@ -24,3 +24,4 @@ public record Constraint(
         return String.format("%s(%s,%s,%s)", type.name(), result, var1, var2);
     }
 }
+

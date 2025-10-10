@@ -1,4 +1,6 @@
-package fr.univamu.solver;
+package fr.univamu.solver.domain;
+
+import fr.univamu.solver.api.ProblemBuilder;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,8 @@
-package fr.univamu.solver;
+package fr.univamu.solver.api;
+
+import fr.univamu.solver.domain.Constraint;
+import fr.univamu.solver.domain.Problem;
+import fr.univamu.solver.domain.Variable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,3 +132,4 @@ public class ProblemBuilder {
         return constraints.size();
     }
 }
+
