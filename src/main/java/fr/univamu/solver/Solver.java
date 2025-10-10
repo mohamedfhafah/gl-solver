@@ -13,6 +13,7 @@ public class Solver implements ISolver {
     private final List<Variable> variables = new LinkedList<>();
     private int strategy = CHECK_INTERVALS_STRATEGY;
     private final Checker checker;
+    private final Reducer reducer;
 
     private Solutions solutions = new Solutions();
 
@@ -21,41 +22,16 @@ public class Solver implements ISolver {
      */
     public Solver() {
         this.checker = new Checker(constraints, variables);
+        this.reducer = new Reducer(constraints, variables);
     }
     private long nodesCounter = 0;
     private long maxNodes = 1000_000_000L;
     private boolean verbose = true;
-    private boolean modified = false;
 
     public void reduceAndCheckIntervalsStrategy() {
         strategy = REDUCE_AND_CHECK_INTERVALS_STRATEGY;
     }
 
-
-    private void reduceAddConstraint(Constraint c) {
-        modified = c.result().reduce(c.var1().add(c.var2())) || modified;
-        modified = c.var1().reduce(c.result().sub(c.var2())) || modified;
-        modified = c.var2().reduce(c.result().sub(c.var1())) || modified;
-    }
-
-    private void reduceMulConstraint(Constraint c) {
-        for (int i = 0; i < 3; i++) {
-            modified = c.result().reduce(c.var1().mul(c.var2())) || modified;
-            modified = c.var2().reduce(c.result().inverseMul(c.var1())) || modified;
-            modified = c.var1().reduce(c.result().inverseMul(c.var2())) || modified;
-        }
-    }
-
-    private void reduce(Constraint c) {
-        switch (c.type()) {
-            case ADD:
-                reduceAddConstraint(c);
-                break;
-            case MUL:
-                reduceMulConstraint(c);
-                break;
-        }
-    }
 
     private void reduce() {
         if (verbose) {
@@ -63,10 +39,7 @@ public class Solver implements ISolver {
             variables.forEach(System.out::println);
         }
 
-        do {
-            modified = false;
-            constraints.forEach(this::reduce);
-        } while (modified);
+        reducer.reduce();
 
         if (verbose) {
             System.out.println("Variables after reduction:");
