@@ -3,18 +3,25 @@ package fr.univamu.solver;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Solver implements ISolver {
 
-    private static final int CHECK_INTERVALS_STRATEGY = 1;
-    private static final int REDUCE_AND_CHECK_INTERVALS_STRATEGY = 2;
+    public static final int CHECK_INTERVALS_STRATEGY = 1;
+    public static final int REDUCE_AND_CHECK_INTERVALS_STRATEGY = 2;
 
     private final List<Constraint> constraints = new LinkedList<>();
     private final List<Variable> variables = new LinkedList<>();
     private int strategy = CHECK_INTERVALS_STRATEGY;
+    private final Checker checker;
 
     private Solutions solutions = new Solutions();
+
+    /**
+     * Constructeur par défaut du Solver.
+     */
+    public Solver() {
+        this.checker = new Checker(constraints, variables);
+    }
     private long nodesCounter = 0;
     private long maxNodes = 1000_000_000L;
     private boolean verbose = true;
@@ -24,32 +31,6 @@ public class Solver implements ISolver {
         strategy = REDUCE_AND_CHECK_INTERVALS_STRATEGY;
     }
 
-    private boolean checkAddConstraintIntervalsStrategy(Constraint c) {
-        return c.var1().add(c.var2()).inter(c.result()).isNotEmpty();
-    }
-
-    private boolean checkMulConstraintIntervalsStrategy(Constraint c) {
-        return c.var1().mul(c.var2()).inter(c.result()).isNotEmpty();
-    }
-
-    private boolean checkDivConstraintIntervalsStrategy(Constraint c) {
-        return c.var1().div(c.var2()).inter(c.result()).isNotEmpty();
-    }
-
-    private boolean checkDiffConstraintIntervalsStrategy(Constraint c) {
-        var result = c.result();
-        var ko = result.equals(c.var1()) && result.isOneValue();
-        return (!ko);
-    }
-
-    private boolean checkConstraintIntervalsStrategy(Constraint c) {
-        return switch (c.type()) {
-            case ADD -> checkAddConstraintIntervalsStrategy(c);
-            case DIFF -> checkDiffConstraintIntervalsStrategy(c);
-            case MUL -> checkMulConstraintIntervalsStrategy(c);
-            case DIV -> checkDivConstraintIntervalsStrategy(c);
-        };
-    }
 
     private void reduceAddConstraint(Constraint c) {
         modified = c.result().reduce(c.var1().add(c.var2())) || modified;
@@ -93,20 +74,8 @@ public class Solver implements ISolver {
         }
     }
 
-    private boolean checkConstraint(Constraint c) {
-        return switch (strategy) {
-            case CHECK_INTERVALS_STRATEGY, REDUCE_AND_CHECK_INTERVALS_STRATEGY -> checkConstraintIntervalsStrategy(c);
-            default -> throw new IllegalStateException("bad strategy: " + strategy);
-        };
-    }
-
     private boolean checkConstraints() {
-        for (Constraint c : constraints) {
-            if (!checkConstraint(c)) {
-                return false;
-            }
-        }
-        return true;
+        return checker.checkAll();
     }
 
     private Variable findVariable() {

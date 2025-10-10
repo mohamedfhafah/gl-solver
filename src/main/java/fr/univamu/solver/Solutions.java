@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.function.Consumer;
-import java.util.ArrayList;
 
 /**
  * Classe pour gérer les solutions trouvées par le solveur.
