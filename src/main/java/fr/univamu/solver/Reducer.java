@@ -1,19 +1,25 @@
 package fr.univamu.solver;
 
 import java.util.List;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * Classe responsable de la réduction des domaines des variables selon les contraintes.
- * Centralise toutes les méthodes de réduction extraites du Solver.
+ * Utilise un système d'observateurs pour optimiser les réductions en ne traitant
+ * que les contraintes susceptibles d'être affectées par les changements de domaine.
  */
 public class Reducer {
 
     private final List<Constraint> constraints;
     private final List<Variable> variables;
+    private final Set<Constraint> constraintsToStudy = new LinkedHashSet<>();
     private boolean modified = false;
 
     /**
      * Constructeur du Reducer.
+     * Installe automatiquement des observateurs sur toutes les variables pour
+     * détecter les changements de domaine et mettre à jour la liste des contraintes à étudier.
      *
      * @param constraints la liste des contraintes à réduire
      * @param variables la liste des variables du problème
@@ -21,17 +27,38 @@ public class Reducer {
     public Reducer(List<Constraint> constraints, List<Variable> variables) {
         this.constraints = constraints;
         this.variables = variables;
+
+        // Installer les observateurs sur toutes les variables
+        for (Variable var : variables) {
+            var.setObserver(changedVar -> {
+                // Quand une variable change, ajouter toutes les contraintes qui la concernent
+                for (Constraint c : constraints) {
+                    if (c.result() == changedVar || c.var1() == changedVar || c.var2() == changedVar) {
+                        constraintsToStudy.add(c);
+                    }
+                }
+            });
+        }
     }
 
     /**
-     * Réduit les domaines des variables en appliquant toutes les contraintes
-     * jusqu'à ce qu'aucune modification ne soit possible.
+     * Réduit les domaines des variables en utilisant un système d'observateurs optimisé.
+     * Au lieu de vérifier toutes les contraintes à chaque itération, cette méthode
+     * ne traite que les contraintes susceptibles d'être affectées par les changements récents.
      */
     public void reduce() {
-        do {
-            modified = false;
-            constraints.forEach(this::reduceConstraint);
-        } while (modified);
+        // Initialiser avec toutes les contraintes pour la première passe
+        constraintsToStudy.addAll(constraints);
+
+        // Tant qu'il y a des contraintes à étudier
+        while (!constraintsToStudy.isEmpty()) {
+            // Prendre la première contrainte à étudier
+            Constraint c = constraintsToStudy.iterator().next();
+            constraintsToStudy.remove(c);
+
+            // Appliquer la réduction sur cette contrainte
+            reduceConstraint(c);
+        }
     }
 
     /**
@@ -149,5 +176,26 @@ public class Reducer {
      */
     public void resetModified() {
         modified = false;
+    }
+
+    /**
+     * Nettoie les observateurs installés sur les variables.
+     * Utile pour éviter les fuites mémoire ou pour réutiliser les variables ailleurs.
+     */
+    public void clearObservers() {
+        for (Variable var : variables) {
+            var.setObserver(null);
+        }
+        constraintsToStudy.clear();
+    }
+
+    /**
+     * Retourne le nombre de contraintes actuellement dans la liste d'étude.
+     * Utile pour le debugging et l'optimisation.
+     *
+     * @return le nombre de contraintes à étudier
+     */
+    public int getConstraintsToStudyCount() {
+        return constraintsToStudy.size();
     }
 }
