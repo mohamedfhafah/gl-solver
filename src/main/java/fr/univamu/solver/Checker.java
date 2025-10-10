@@ -8,6 +8,10 @@ import java.util.List;
  */
 public class Checker {
 
+    // Constantes pour les stratégies de vérification
+    public static final int CHECK_INTERVALS_STRATEGY = 1;
+    public static final int REDUCE_AND_CHECK_INTERVALS_STRATEGY = 2;
+
     private final List<Constraint> constraints;
     private final List<Variable> variables;
     private long checkCounter = 0;
@@ -30,7 +34,7 @@ public class Checker {
      */
     public boolean checkAll() {
         for (Constraint c : constraints) {
-            if (!checkConstraint(c, Solver.CHECK_INTERVALS_STRATEGY)) {
+            if (!checkConstraint(c, CHECK_INTERVALS_STRATEGY)) {
                 return false;
             }
         }
@@ -47,7 +51,7 @@ public class Checker {
     public boolean checkConstraint(Constraint c, int strategy) {
         checkCounter++;
         return switch (strategy) {
-            case Solver.CHECK_INTERVALS_STRATEGY, Solver.REDUCE_AND_CHECK_INTERVALS_STRATEGY -> checkConstraintIntervalsStrategy(c);
+            case CHECK_INTERVALS_STRATEGY, REDUCE_AND_CHECK_INTERVALS_STRATEGY -> checkConstraintIntervalsStrategy(c);
             default -> throw new IllegalStateException("bad strategy: " + strategy);
         };
     }

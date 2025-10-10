@@ -6,12 +6,9 @@ import java.util.List;
 
 public class Solver implements ISolver {
 
-    public static final int CHECK_INTERVALS_STRATEGY = 1;
-    public static final int REDUCE_AND_CHECK_INTERVALS_STRATEGY = 2;
-
     private final List<Constraint> constraints = new LinkedList<>();
     private final List<Variable> variables = new LinkedList<>();
-    private int strategy = CHECK_INTERVALS_STRATEGY;
+    private IStrategy strategy;
     private final Checker checker;
     private final Reducer reducer;
 
@@ -23,13 +20,26 @@ public class Solver implements ISolver {
     public Solver() {
         this.checker = new Checker(constraints, variables);
         this.reducer = new Reducer(constraints, variables);
+        this.strategy = new DefaultStrategy(checker); // Stratégie par défaut
     }
     private long nodesCounter = 0;
     private long maxNodes = 1000_000_000L;
     private boolean verbose = true;
 
     public void reduceAndCheckIntervalsStrategy() {
-        strategy = REDUCE_AND_CHECK_INTERVALS_STRATEGY;
+        strategy = new ReduceAndCheckIntervalsStrategy(reducer, checker);
+    }
+
+    /**
+     * Retourne le type de stratégie sous forme d'entier pour la compatibilité
+     * avec ProblemBuilder (qui utilise encore l'ancien système).
+     */
+    private int getStrategyType() {
+        if (strategy instanceof ReduceAndCheckIntervalsStrategy) {
+            return 2; // REDUCE_AND_CHECK_INTERVALS_STRATEGY
+        } else {
+            return 1; // CHECK_INTERVALS_STRATEGY (par défaut)
+        }
     }
 
 
@@ -47,31 +57,16 @@ public class Solver implements ISolver {
         }
     }
 
-    private boolean checkConstraints() {
-        return checker.checkAll();
-    }
 
-    private Variable findVariable() {
-        Variable best = null;
-        for (Variable v : variables) {
-            if (v.isOneValue()) continue;
-            if (best == null) {
-                best = v;
-            } else if (v.getSize() < best.getSize()) {
-                best = v;
-            }
-        }
-        return best;
-    }
 
     private void findSolutions() {
         if (++nodesCounter > maxNodes) {
             throw new IllegalStateException("too many nodes");
         }
-        if (!checkConstraints()) {
+        if (!strategy.check(constraints, variables)) {
             return;
         }
-        var v = findVariable();
+        var v = strategy.chooseVariable(variables);
         if (v == null) {
             solutions.addSolution(variables);
             return;
@@ -80,16 +75,8 @@ public class Solver implements ISolver {
         int min = v.getMin();
         int max = v.getMax();
 
-        // Comment découper le domaine ?
-        int step = 1;
-        if (v.getSize() > 1000) {
-            if (min < 0 && max >= 0) {
-                step = -min;
-            } else {
-                int mid = (min + max) / 2;
-                step = (1 + mid - min);
-            }
-        }
+        // Utiliser la stratégie pour déterminer le pas d'exploration
+        int step = strategy.step(v);
 
         // explorer le domaine
         for (int value = min; value <= max; value += step) {
@@ -480,7 +467,7 @@ public class Solver implements ISolver {
         }
 
         // Configurer les paramètres
-        builder.setStrategy(strategy)
+        builder.setStrategy(getStrategyType())
                .setMaxNodes(maxNodes)
                .setVerbose(verbose);
 
@@ -503,9 +490,10 @@ public class Solver implements ISolver {
         // Réinitialiser les compteurs et résoudre
         solutions.reset();
         this.nodesCounter = 0;
-        if (strategy == REDUCE_AND_CHECK_INTERVALS_STRATEGY) {
-            reduce();
-        }
+
+        // Appliquer la phase before() de la stratégie (réduction éventuelle)
+        strategy.before(variables, constraints);
+
         findSolutions();
         return solutions.getCount();
     }

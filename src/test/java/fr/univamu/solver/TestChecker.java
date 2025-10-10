@@ -111,7 +111,7 @@ class TestChecker {
         var checker = new Checker(constraints, variables);
 
         // Vérifier la contrainte directement
-        assertTrue(checker.checkConstraint(constraint, Solver.CHECK_INTERVALS_STRATEGY),
+        assertTrue(checker.checkConstraint(constraint, Checker.CHECK_INTERVALS_STRATEGY),
                   "La contrainte devrait être satisfaite");
 
         assertEquals(1, checker.getCheckCounter());
