@@ -333,6 +333,24 @@ public class TestSolver {
     }
 
     @Test
+    public void testSolutionsStorage() {
+        Solver solver = new Solver();
+        solver.setVerbose(false);
+        solver.getSolutions().setDisplaySolutions(false);
+
+        var x = solver.newVar("X", 0, 1);
+        solver.addRelation(x, "<=", 0);
+
+        assertEquals(1, solver.solve());
+
+        var solutions = solver.getSolutions().getStoredSolutions();
+        assertEquals(1, solutions.size(), "Une seule solution doit être mémorisée");
+        assertEquals(1, solutions.get(0).size(), "La solution doit contenir la variable X");
+        assertEquals("X", solutions.get(0).get(0).variableName());
+        assertEquals(0, solutions.get(0).get(0).value());
+    }
+
+    @Test
     public void testExpressionOptimizationAplus2equalsB() {
         // Test de l'optimisation pour A + 2 = B
         System.out.println("\n=== TEST OPTIMISATION A + 2 = B ===");

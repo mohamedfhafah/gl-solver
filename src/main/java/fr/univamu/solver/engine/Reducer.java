@@ -31,16 +31,9 @@ public class Reducer {
         this.constraints = constraints;
         this.variables = variables;
 
-        // Installer les observateurs sur toutes les variables
+        // Installer les observateurs sur toutes les variables déjà présentes
         for (Variable var : variables) {
-            var.setObserver(changedVar -> {
-                // Quand une variable change, ajouter toutes les contraintes qui la concernent
-                for (Constraint c : constraints) {
-                    if (c.result() == changedVar || c.var1() == changedVar || c.var2() == changedVar) {
-                        constraintsToStudy.add(c);
-                    }
-                }
-            });
+            registerVariable(var);
         }
     }
 
@@ -50,6 +43,7 @@ public class Reducer {
      * ne traite que les contraintes susceptibles d'être affectées par les changements récents.
      */
     public void reduce() {
+        modified = false;
         // Initialiser avec toutes les contraintes pour la première passe
         constraintsToStudy.addAll(constraints);
 
@@ -80,6 +74,9 @@ public class Reducer {
             case DIFF:
                 reduceDiffConstraint(c);
                 break;
+            case DIV:
+                reduceDivConstraint(c);
+                break;
         }
     }
 
@@ -106,6 +103,20 @@ public class Reducer {
             modified = c.result().reduce(c.var1().mul(c.var2())) || modified;
             modified = c.var2().reduce(c.result().inverseMul(c.var1())) || modified;
             modified = c.var1().reduce(c.result().inverseMul(c.var2())) || modified;
+        }
+    }
+
+    /**
+     * Réduit les domaines selon une contrainte de division (A / B = C).
+     * Traite la division comme une multiplication inversée : A = C * B.
+     *
+     * @param c la contrainte de division
+     */
+    private void reduceDivConstraint(Constraint c) {
+        for (int i = 0; i < 3; i++) {
+            modified = c.result().reduce(c.var1().div(c.var2())) || modified;
+            modified = c.var1().reduce(c.result().mul(c.var2())) || modified;
+            modified = c.var2().reduce(c.var1().inverseMul(c.result())) || modified;
         }
     }
 
@@ -201,5 +212,22 @@ public class Reducer {
     public int getConstraintsToStudyCount() {
         return constraintsToStudy.size();
     }
-}
 
+    /**
+     * Enregistre un nouvel observateur pour une variable afin de suivre ses réductions.
+     *
+     * @param var la variable à observer
+     */
+    public void registerVariable(Variable var) {
+        if (var == null) {
+            return;
+        }
+        var.setObserver(changedVar -> {
+            for (Constraint c : constraints) {
+                if (c.result() == changedVar || c.var1() == changedVar || c.var2() == changedVar) {
+                    constraintsToStudy.add(c);
+                }
+            }
+        });
+    }
+}

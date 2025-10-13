@@ -46,32 +46,16 @@ public class TestExpressionOptimization {
         Variable expr = createOptimizedExpression(solver, A, "+", 2);
         solver.addRelation(expr, "=", B);
 
-        // Vérifier que nous avons le bon nombre de variables et contraintes
-        assertEquals(3, getVariables(solver).size(), "Devrait avoir A, B, et T1 (constante)");
-        assertEquals(2, getConstraints(solver).size(), "Devrait avoir la contrainte constante + la contrainte d'addition");
+        solver.optimize();
 
-        // Vérifier que l'expression a bien été optimisée
-        // DEBUG: Afficher toutes les contraintes et variables
-        System.out.println("=== DEBUG OPTIMISATION ===");
-        System.out.println("Variables (" + getVariables(solver).size() + "):");
-        for (var v : getVariables(solver)) {
-            System.out.println("  " + v.getName() + " ∈ [" + v.getMin() + "," + v.getMax() + "]");
-        }
-        System.out.println("Contraintes (" + getConstraints(solver).size() + "):");
-        for (var c : getConstraints(solver)) {
-            System.out.println("  " + c);
-        }
+        assertEquals(3, getVariables(solver).size(), "Doit conserver A, B et la constante 2");
+        assertEquals(1, getConstraints(solver).size(), "La contrainte doit être directement B = A + 2");
 
-        // Il devrait y avoir une contrainte B = A + T1 (où T1 est la constante 2)
-        boolean hasOptimizedConstraint = false;
-        for (var c : getConstraints(solver)) {
-            if (c.type() == ConstraintType.ADD && c.result().equals(B)) {
-                hasOptimizedConstraint = true;
-                break;
-            }
-        }
-        // Pour l'instant, acceptons que l'optimisation ne fonctionne pas encore
-        // assertTrue(hasOptimizedConstraint, "Devrait avoir une contrainte B = A + constante");
+        assertTrue(getConstraints(solver).stream()
+            .anyMatch(c -> c.type() == ConstraintType.ADD
+                && c.result().equals(B)
+                && c.var1().equals(A)),
+            "La contrainte optimisée doit cibler directement B");
     }
 
     @Test
@@ -83,20 +67,37 @@ public class TestExpressionOptimization {
          * AVEC optimisation : minimiser les variables intermédiaires
          */
 
-        Solver solver = new Solver();
+        // Version sans optimisation automatique
+        Solver baseline = new Solver();
+        Variable A0 = createVariable("A", 0, 9);
+        Variable B0 = createVariable("B", 0, 9);
+        Variable C0 = createVariable("C", 0, 36);
+        Variable sumBaseline = baseline.expression(A0, "+", B0);
+        Variable exprBaseline = baseline.expression(sumBaseline, "*", 2);
+        baseline.addRelation(exprBaseline, "=", C0);
 
+        int varsBaseline = getVariables(baseline).size();
+        int consBaseline = getConstraints(baseline).size();
+
+        // Version utilisant l'optimisation
+        Solver optimized = new Solver();
         Variable A = createVariable("A", 0, 9);
         Variable B = createVariable("B", 0, 9);
         Variable C = createVariable("C", 0, 36);
+        Variable sumExpr = createOptimizedExpression(optimized, A, "+", B);
+        Variable expr = createOptimizedExpression(optimized, sumExpr, "*", 2);
+        optimized.addRelation(expr, "=", C);
+        optimized.optimize();
 
-        // Expression complexe optimisée
-        Variable sumExpr = createOptimizedExpression(solver, A, "+", B);
-        Variable expr = createOptimizedExpression(solver, sumExpr, "*", 2);
-        solver.addRelation(expr, "=", C);
+        int varsOptimized = getVariables(optimized).size();
+        int consOptimized = getConstraints(optimized).size();
 
-        // L'expression devrait être résolue avec un nombre minimal de variables intermédiaires
-        assertTrue(getVariables(solver).size() <= 6, "Nombre de variables devrait être raisonnable");
-        assertTrue(getConstraints(solver).size() <= 4, "Nombre de contraintes devrait être minimal");
+        assertTrue(varsOptimized <= varsBaseline,
+            () -> String.format("L'optimisation devrait réduire ou maintenir le nombre de variables (%d vs %d)",
+                varsOptimized, varsBaseline));
+        assertTrue(consOptimized <= consBaseline,
+            () -> String.format("L'optimisation devrait réduire ou maintenir le nombre de contraintes (%d vs %d)",
+                consOptimized, consBaseline));
     }
 
     @Test
@@ -123,6 +124,8 @@ public class TestExpressionOptimization {
 
         Variable expr2 = createOptimizedExpression(solverOpt, A2, "+", 2); // avec optimisation
         solverOpt.addRelation(expr2, "=", B2);
+
+        solverOpt.optimize();
 
         int variablesOpt = getVariables(solverOpt).size();
         int constraintsOpt = getConstraints(solverOpt).size();

@@ -73,12 +73,12 @@ public class TestInterval {
 			return x / y;
 		}, a, b);
 
-		// Cette méthode donne le résultat exact par exploration complète
-		System.out.println("Résultat exact pour [-10,10] ÷ [-2,2] : " + expected);
-
 		// Comparaison avec la méthode div() existante (approximative)
 		var actual = a.div(b);
-		System.out.println("Résultat approximatif : " + actual);
+
+		// Le résultat analytique doit contenir toutes les valeurs possibles
+		assertTrue(expected.isInside(actual),
+			"L'intervalle calculé doit contenir le résultat exhaustif");
 	}
 
 	@Test

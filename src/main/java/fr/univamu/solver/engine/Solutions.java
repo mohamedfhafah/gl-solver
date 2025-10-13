@@ -1,82 +1,90 @@
 package fr.univamu.solver.engine;
 
+import fr.univamu.solver.domain.Assignment;
 import fr.univamu.solver.domain.Variable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.function.Consumer;
 
 /**
- * Classe pour gérer les solutions trouvées par le solveur.
- * Utilise un système de callback pour traiter les solutions au fur et à mesure
- * de leur découverte, évitant ainsi de stocker toutes les solutions en mémoire.
+ * Gestionnaire des solutions produites par le solveur.
+ * Permet de compter, mémoriser et éventuellement afficher les solutions.
  */
 public class Solutions {
-    
+
     private long count = 0;
+    private final List<List<Assignment>> storedSolutions = new ArrayList<>();
     private Consumer<Map<String, Integer>> onSolutionFound = null;
     private boolean displaySolutions = true;
-    
+
     /**
-     * Ajoute une solution trouvée.
-     * 
-     * @param variables la liste des variables avec leurs valeurs finales
+     * Ajoute une solution trouvée par le solveur.
+     *
+     * @param variables la liste des variables avec leurs domaines réduits à une valeur
      */
     public void addSolution(List<Variable> variables) {
         count++;
-        
+
+        List<Assignment> snapshot = variables.stream()
+            .filter(Variable::isNamed)
+            .map(v -> new Assignment(v.getName(), v.getFixedValue()))
+            .toList();
+        storedSolutions.add(snapshot);
+
         if (displaySolutions) {
-            // Affichage simple sur la sortie standard
-            variables.stream()
-                .filter(Variable::isNamed)
-                .forEach(v -> System.out.println(v));
+            snapshot.forEach(assignment -> System.out.println(assignment));
             System.out.println();
         }
-        
+
         if (onSolutionFound != null) {
-            // Créer un map pour le callback
-            Map<String, Integer> solution = new HashMap<>();
-            variables.stream()
-                .filter(Variable::isNamed)
-                .forEach(v -> solution.put(v.getName(), v.getFixedValue()));
-            
-            onSolutionFound.accept(solution);
+            Map<String, Integer> solutionMap = new HashMap<>();
+            snapshot.forEach(a -> solutionMap.put(a.variableName(), a.value()));
+            onSolutionFound.accept(solutionMap);
         }
     }
-    
+
     /**
-     * Retourne le nombre de solutions trouvées.
-     * 
-     * @return le nombre de solutions
+     * Retourne le nombre de solutions trouvées depuis le dernier reset.
      */
     public long getCount() {
         return count;
     }
-    
+
     /**
-     * Définit un callback qui sera appelé pour chaque solution trouvée.
-     * 
-     * @param callback le callback à appeler (null pour désactiver)
+     * Retourne une copie non modifiable des solutions mémorisées.
+     */
+    public List<List<Assignment>> getStoredSolutions() {
+        return Collections.unmodifiableList(storedSolutions.stream()
+            .map(List::copyOf)
+            .toList());
+    }
+
+    /**
+     * Définit un callback exécuté à chaque solution trouvée.
+     *
+     * @param callback fonction invoquée avec la solution représentée sous forme de Map
      */
     public void setOnSolutionFound(Consumer<Map<String, Integer>> callback) {
         this.onSolutionFound = callback;
     }
-    
+
     /**
-     * Active ou désactive l'affichage des solutions sur la sortie standard.
-     * 
-     * @param display true pour afficher, false pour masquer
+     * Active ou désactive l'affichage des solutions.
      */
     public void setDisplaySolutions(boolean display) {
         this.displaySolutions = display;
     }
-    
+
     /**
-     * Remet le compteur à zéro.
+     * Vide l'historique et remet le compteur à zéro.
      */
     public void reset() {
         this.count = 0;
+        this.storedSolutions.clear();
     }
 }
 

@@ -111,9 +111,22 @@ public class Checker {
      * @return true si la contrainte n'est pas trivialement fausse
      */
     private boolean checkDiffConstraintIntervalsStrategy(Constraint c) {
-        var result = c.result();
-        var ko = result.equals(c.var1()) && result.isOneValue();
-        return (!ko);
+        var x = c.result();
+        var y = c.var1();
+
+        if (x == null || y == null) {
+            return true;
+        }
+
+        if (x == y) {
+            return false;
+        }
+
+        if (x.isOneValue() && y.isOneValue()) {
+            return x.getMin() != y.getMin();
+        }
+
+        return x.isNotEmpty() && y.isNotEmpty();
     }
 
     /**
@@ -132,4 +145,3 @@ public class Checker {
         checkCounter = 0;
     }
 }
-

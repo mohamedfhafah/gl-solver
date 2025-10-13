@@ -23,6 +23,7 @@ public class Solver implements ISolver {
     private final Reducer reducer;
 
     private Solutions solutions = new Solutions();
+    private boolean needsOptimization = false;
 
     /**
      * Constructeur par défaut du Solver.
@@ -96,9 +97,22 @@ public class Solver implements ISolver {
         v.init(min, max);
     }
 
+    private void registerVariableIfNeeded(Variable variable) {
+        if (variable == null) {
+            return;
+        }
+        boolean alreadyRegistered = variables.stream().anyMatch(existing -> existing == variable);
+        if (!alreadyRegistered) {
+            variables.add(variable);
+            if (reducer != null) {
+                reducer.registerVariable(variable);
+            }
+        }
+    }
+
     private Variable newVar(int min, int max) {
         var v = new Variable();
-        variables.add(v);
+        registerVariableIfNeeded(v);
         v.init(min, max);
         return v;
     }
@@ -110,7 +124,7 @@ public class Solver implements ISolver {
     public Variable newVar(String name, int min, int max) {
         var v = new Variable(name);
         v.init(min, max);
-        variables.add(v);
+        registerVariableIfNeeded(v);
         return v;
     }
 
@@ -143,6 +157,9 @@ public class Solver implements ISolver {
     }
 
     public void addAllDiffRelation(Variable... variables) {
+        for (Variable variable : variables) {
+            registerVariableIfNeeded(variable);
+        }
         for (int i = 0; i < variables.length; i++)
             for (int j = i + 1; j < variables.length; j++) {
                 diff(variables[i], variables[j]);
@@ -168,6 +185,7 @@ public class Solver implements ISolver {
     private Variable parseSimpleTerm(List<Object> terms) {
         var first = terms.removeFirst();
         if (first instanceof Variable var) {
+            registerVariableIfNeeded(var);
             return var;
         }
         if (first instanceof Integer cst) {
@@ -221,33 +239,29 @@ public class Solver implements ISolver {
     }
 
     public void addRelation(Variable a, String relation, int constant) {
+        registerVariableIfNeeded(a);
         // OPTIMISATION: Pour les relations simples avec constantes,
         // ajuster directement le domaine au lieu de créer une contrainte
         switch (relation) {
             case "=":
                 // X = constante : réduire le domaine à une seule valeur
-                if (constant >= a.getMin() && constant <= a.getMax()) {
-                    a.init(constant, constant);
-                } else {
-                    // Contrainte impossible, domaine vide
-                    a.init(1, 0); // Crée un domaine vide
-                }
+                a.reduce(constant, constant);
                 return;
             case ">":
                 // X > constante : domaine commence à constante+1
-                a.init(Math.max(a.getMin(), constant + 1), a.getMax());
+                a.reduce(Math.max(a.getMin(), constant + 1), a.getMax());
                 return;
             case ">=":
                 // X >= constante : domaine commence à constante
-                a.init(Math.max(a.getMin(), constant), a.getMax());
+                a.reduce(Math.max(a.getMin(), constant), a.getMax());
                 return;
             case "<":
                 // X < constante : domaine finit à constante-1
-                a.init(a.getMin(), Math.min(a.getMax(), constant - 1));
+                a.reduce(a.getMin(), Math.min(a.getMax(), constant - 1));
                 return;
             case "<=":
                 // X <= constante : domaine finit à constante
-                a.init(a.getMin(), Math.min(a.getMax(), constant));
+                a.reduce(a.getMin(), Math.min(a.getMax(), constant));
                 return;
             default:
                 // Pour les autres relations, utiliser l'approche normale
@@ -257,6 +271,8 @@ public class Solver implements ISolver {
     }
 
     public void addRelation(Variable a, String relation, Variable b) {
+        registerVariableIfNeeded(a);
+        registerVariableIfNeeded(b);
         switch (relation) {
             case "=":
                 eq(a, b);
@@ -303,8 +319,7 @@ public class Solver implements ISolver {
      * @return la variable résultat optimisée
      */
     public Variable expressionOptimized(Object... terms) {
-        // Pour l'instant, construction normale sans optimisation
-        // L'optimisation sera appelée manuellement après avoir ajouté toutes les relations
+        needsOptimization = true;
         return expression(terms);
     }
 
@@ -313,6 +328,7 @@ public class Solver implements ISolver {
      * Doit être appelée après avoir ajouté toutes les contraintes.
      */
     public void optimize() {
+        needsOptimization = false;
         // Trouver la variable résultat principale (celle qui n'est pas intermédiaire)
         Variable mainResult = null;
         for (Constraint c : constraints) {
@@ -425,6 +441,9 @@ public class Solver implements ISolver {
         Constraint definitionConstraint = null;
         for (Constraint c : constraints) {
             if (c.result().equals(intermediate)) {
+                if (c.type() == ConstraintType.ADD && c.var1() != null && isConstantZero(c.var1()) && c.var2() != null) {
+                    continue;
+                }
                 definitionConstraint = c;
                 break;
             }
@@ -447,8 +466,18 @@ public class Solver implements ISolver {
         // Supprimer la contrainte d'égalité
         constraints.remove(equalityConstraint);
 
+        // Supprimer la constante zéro si elle n'est plus utilisée
+        Variable zero = equalityConstraint.var1();
+        if (zero != null && isConstantZero(zero)) {
+            boolean stillUsed = constraints.stream().anyMatch(c ->
+                c.result() == zero || c.var1() == zero || c.var2() == zero);
+            if (!stillUsed) {
+                variables.removeIf(v -> v == zero);
+            }
+        }
+
         // Supprimer la variable intermédiaire
-        variables.remove(intermediate);
+        variables.removeIf(v -> v == intermediate);
     }
 
     /**
@@ -485,6 +514,9 @@ public class Solver implements ISolver {
     }
 
     public long solve() {
+        if (needsOptimization) {
+            optimize();
+        }
         // Construire le problème immuable avec ProblemBuilder
         Problem problem = buildProblem();
 
@@ -533,4 +565,3 @@ public class Solver implements ISolver {
     }
 
 }
-
