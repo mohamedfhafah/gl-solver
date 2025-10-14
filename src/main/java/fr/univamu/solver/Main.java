@@ -38,6 +38,7 @@ public final class Main {
                                        Consumer<Solver> builder,
                                        boolean useReducer,
                                        long maxNodes,
+                                       int solutionLimit,
                                        int sampleCount) {}
 
     private record ProblemScenario(String title, String description,
@@ -108,6 +109,7 @@ public final class Main {
                 },
                 true,
                 150_000_000L,
+                0,
                 4
             ),
             new CryptarithmScenario(
@@ -125,6 +127,7 @@ public final class Main {
                 },
                 true,
                 120_000_000L,
+                0,
                 2
             ),
             new CryptarithmScenario(
@@ -145,7 +148,33 @@ public final class Main {
                 },
                 true,
                 200_000_000L,
+                0,
                 2
+            ),
+            new CryptarithmScenario(
+                "Niveau 4 : SEND + MORE = MONEY",
+                "Cryptarithme classique à huit lettres avec retenues multiples (solution unique).",
+                solver -> {
+                    var s = solver.newVar("S", 1, 9);
+                    var e = solver.newVar("E", 0, 9);
+                    var n = solver.newVar("N", 0, 9);
+                    var d = solver.newVar("D", 0, 9);
+                    var m = solver.newVar("M", 1, 9);
+                    var o = solver.newVar("O", 0, 9);
+                    var r = solver.newVar("R", 0, 9);
+                    var y = solver.newVar("Y", 0, 9);
+
+                    solver.addAllDiffRelation(s, e, n, d, m, o, r, y);
+
+                    var send = solver.expression(s, "*", 1000, "+", e, "*", 100, "+", n, "*", 10, "+", d);
+                    var more = solver.expression(m, "*", 1000, "+", o, "*", 100, "+", r, "*", 10, "+", e);
+                    var money = solver.expression(m, "*", 10000, "+", o, "*", 1000, "+", n, "*", 100, "+", e, "*", 10, "+", y);
+                    solver.addRelation(solver.expression(send, "+", more), "=", money);
+                },
+                true,
+                800_000_000L,
+                1,
+                1
             )
         );
 
@@ -162,7 +191,7 @@ public final class Main {
         solver.setMaxNodes(scenario.maxNodes());
         scenario.builder().accept(solver);
 
-        RunOutcome outcome = solveAndCollect(solver);
+        RunOutcome outcome = solveAndCollect(solver, scenario.solutionLimit());
         printRunStats(outcome.stats());
         printSampleSolutions(outcome.solutions(), scenario.sampleCount());
     }
