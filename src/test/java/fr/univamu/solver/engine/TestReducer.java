@@ -2,6 +2,7 @@ package fr.univamu.solver.engine;
 
 import fr.univamu.solver.domain.Constraint;
 import fr.univamu.solver.domain.ConstraintType;
+import fr.univamu.solver.domain.Interval;
 import fr.univamu.solver.domain.Variable;
 
 import org.junit.jupiter.api.Test;
@@ -48,6 +49,34 @@ class TestReducer {
         assertEquals(9, c.getMax());
 
         System.out.println("✅ Réduction d'addition fonctionne");
+    }
+
+    @Test
+    void testReduceDivConstraint() {
+        var quotient = new Variable("Q");
+        quotient.init(1, 10);
+        var dividend = new Variable("N");
+        dividend.init(4, 40);
+        var divisor = new Variable("D");
+        divisor.init(2, 5);
+
+        var expectedQuotient = new Interval(quotient.getMin(), quotient.getMax());
+        expectedQuotient.reduce(new Interval(dividend.getMin(), dividend.getMax()).div(new Interval(divisor.getMin(), divisor.getMax())));
+
+        var expectedDividend = new Interval(dividend.getMin(), dividend.getMax());
+        expectedDividend.reduce(new Interval(quotient.getMin(), quotient.getMax()).mul(new Interval(divisor.getMin(), divisor.getMax())));
+
+        var expectedDivisor = new Interval(divisor.getMin(), divisor.getMax());
+        expectedDivisor.reduce(new Interval(dividend.getMin(), dividend.getMax()).inverseMul(new Interval(quotient.getMin(), quotient.getMax())));
+
+        var constraint = new Constraint(ConstraintType.DIV, quotient, dividend, divisor);
+        var reducer = new Reducer(List.of(constraint), List.of(quotient, dividend, divisor));
+
+        reducer.reduce();
+
+        assertEquals(expectedQuotient, quotient);
+        assertEquals(expectedDividend, dividend);
+        assertEquals(expectedDivisor, divisor);
     }
 
     @Test

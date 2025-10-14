@@ -158,43 +158,37 @@ public class TestProblem {
     }
 
     @Test
-    void testGetVariableByName() {
-        var varA = createVariable("A", 1, 9);
-        var varB = createVariable("B", 0, 9);
-        var variables = List.of(varA, varB);
+    void testHasValidVariables() {
+        var validVar = createVariable("A", 1, 9);
+        var emptyVar = createVariable("B", 5, 3); // vide
 
-        var problem = new Problem(variables, List.of(), Problem.CHECK_INTERVALS_STRATEGY, 1000L, true);
+        var problemValid = new Problem(List.of(validVar), List.of(), Problem.CHECK_INTERVALS_STRATEGY, 10L, false);
+        assertTrue(problemValid.hasValidVariables());
 
-        // Variable existante
-        assertEquals(varA, problem.getVariableByName("A"));
-        assertEquals(varB, problem.getVariableByName("B"));
-
-        // Variable inexistante
-        assertNull(problem.getVariableByName("C"));
-
-        // Test null (devrait lever NullPointerException selon la doc)
-        assertThrows(NullPointerException.class, () -> {
-            problem.getVariableByName(null);
-        });
+        var problemInvalid = new Problem(List.of(emptyVar), List.of(), Problem.CHECK_INTERVALS_STRATEGY, 10L, false);
+        assertFalse(problemInvalid.hasValidVariables());
     }
 
     @Test
-    void testHasValidVariables() {
-        // Variables valides
-        var validVars = List.of(
-            createVariable("A", 1, 9),
-            createVariable("B", 0, 5)
-        );
+    void testGetVariableByName() {
+        var a = createVariable("A", 0, 1);
+        var _1 = createVariable("B", 2, 3);
+        var problem = new Problem(List.of(a, _1), List.of(), Problem.CHECK_INTERVALS_STRATEGY, 10L, false);
 
-        var problem1 = new Problem(validVars, List.of(), Problem.CHECK_INTERVALS_STRATEGY, 1000L, true);
-        assertTrue(problem1.hasValidVariables());
+        assertSame(a, problem.getVariableByName("A"));
+        assertSame(_1, problem.getVariableByName("B"));
+        assertNull(problem.getVariableByName("UNKNOWN"));
+        assertThrows(NullPointerException.class, () -> problem.getVariableByName(null));
+    }
 
-        // Variable avec domaine vide
-        var emptyVar = createVariable("EMPTY", 5, 3); // min > max = domaine vide
-        var invalidVars = List.of(createVariable("A", 1, 9), emptyVar);
+    @Test
+    void testReturnedListsAreUnmodifiable() {
+        var a = createVariable("A", 0, 1);
+        var constraint = new Constraint(ConstraintType.ADD, createVariable("R", 0, 2), a, createVariable("B", 0, 1));
+        var problem = new Problem(List.of(a), List.of(constraint), Problem.CHECK_INTERVALS_STRATEGY, 10L, false);
 
-        var problem2 = new Problem(invalidVars, List.of(), Problem.CHECK_INTERVALS_STRATEGY, 1000L, true);
-        assertFalse(problem2.hasValidVariables());
+        assertThrows(UnsupportedOperationException.class, () -> problem.variables().add(createVariable("C", 0, 1)));
+        assertThrows(UnsupportedOperationException.class, () -> problem.constraints().add(constraint));
     }
 
     // Méthode utilitaire pour créer des variables de test

@@ -40,8 +40,6 @@ class TestChecker {
     @Test
     void testCheckAllNegativeCase() {
         // Cas négatif: contraintes insatisfiables
-        System.out.println("\n=== TEST CHECKER - Cas négatif ===");
-
         // Créer des variables et contraintes insatisfiables
         var a = new Variable("A");
         a.init(1, 3);
@@ -57,15 +55,10 @@ class TestChecker {
 
         // Les contraintes devraient être insatisfaites
         assertFalse(checker.checkAll(), "Les contraintes d'addition devraient être insatisfaites");
-
-        System.out.println("✅ Cas négatif passé: contraintes insatisfiables détectées");
     }
 
     @Test
     void testCheckCounter() {
-        // Test du compteur de vérifications
-        System.out.println("\n=== TEST CHECKER - Compteur ===");
-
         var a = new Variable("A");
         a.init(1, 3);
         var b = new Variable("B");
@@ -93,14 +86,10 @@ class TestChecker {
         checker.resetCheckCounter();
         assertEquals(0, checker.getCheckCounter());
 
-        System.out.println("✅ Compteur de vérifications fonctionne correctement");
     }
 
     @Test
     void testCheckConstraintDirectly() {
-        // Test de vérification d'une contrainte spécifique
-        System.out.println("\n=== TEST CHECKER - Vérification directe ===");
-
         var a = new Variable("A");
         a.init(1, 3);
         var b = new Variable("B");
@@ -120,14 +109,10 @@ class TestChecker {
 
         assertEquals(1, checker.getCheckCounter());
 
-        System.out.println("✅ Vérification directe de contrainte fonctionne");
     }
 
     @Test
     void testDiffConstraint() {
-        // Test spécifique des contraintes de différence
-        System.out.println("\n=== TEST CHECKER - Contrainte DIFF ===");
-
         // Cas où la différence est possible
         var x = new Variable("X");
         x.init(1, 5);
@@ -148,6 +133,38 @@ class TestChecker {
         checker = new Checker(List.of(sameVarConstraint), variables);
         assertFalse(checker.checkAll(), "X ≠ X devrait être insatisfiable");
 
-        System.out.println("✅ Contraintes DIFF testées correctement");
+    }
+
+    @Test
+    void testMulConstraint() {
+        var a = new Variable("A");
+        a.init(2, 3);
+        var b = new Variable("B");
+        b.init(4, 5);
+        var prod = new Variable("PROD");
+        prod.init(8, 15);
+
+        var checker = new Checker(List.of(new Constraint(ConstraintType.MUL, prod, a, b)), List.of(a, b, prod));
+        assertTrue(checker.checkAll(), "Multiplication cohérente devrait être valide");
+
+        prod.init(20, 30);
+        assertFalse(checker.checkAll(), "Intervalle résultat incompatible devrait invalider la contrainte");
+    }
+
+    @Test
+    void testDivConstraint() {
+        var dividend = new Variable("DIVIDEND");
+        dividend.init(10, 20);
+        var divisor = new Variable("DIVISOR");
+        divisor.init(2, 4);
+        var quotient = new Variable("QUOTIENT");
+        quotient.init(2, 10);
+
+        var checker = new Checker(List.of(new Constraint(ConstraintType.DIV, quotient, dividend, divisor)),
+                                  List.of(dividend, divisor, quotient));
+        assertTrue(checker.checkAll(), "Division cohérente devrait être valide");
+
+        quotient.init(20, 30);
+        assertFalse(checker.checkAll(), "Quotient hors des bornes devrait invalider la contrainte");
     }
 }
