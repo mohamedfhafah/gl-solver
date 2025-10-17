@@ -14,12 +14,12 @@
 |-------|------------------------------|----------------------|--------|-------|
 | Définir `Backup` | Sauvegarde/restauration des domaines variables pour supporter des réductions multiples par décision. | `fr/univamu/solver/strategy/Backup.java` (nouveau) | ☑ | 2025-10-17 Codex |
 | Étendre `IStrategy` | Ajouter `backup()`/`restore()` (et toute méthode nécessaire) + ajuster implémentations existantes. | `strategy/IStrategy.java`, `strategy/DefaultStrategy.java`, `strategy/ReduceAndCheckIntervalsStrategy.java` | ☑ | 2025-10-17 Codex |
-| Implémenter `AlwaysReduceStrategy` | Stratégie dédiée qui applique `Reducer.reduce()` à chaque étape en s’appuyant sur `Backup`. | `strategy/AlwaysReduceStrategy.java` (nouveau) | ☐ | |
-| Adapter `Solver` | Intégrer `alwaysReduceStrategy()`, orchestrer backup/restore dans `findSolutions`, brancher `Reducer`. | `engine/Solver.java` | ☐ | |
-| Supporter la nouvelle stratégie dans l’API immuable | Ajouter la constante de stratégie et la validation associée. | `domain/Problem.java`, `api/ProblemBuilder.java` | ☐ | |
-| Exposer la stratégie dans l’API publique | Déclarer `alwaysReduceStrategy()` dans `ISolver` et implémentations. | `api/ISolver.java`, `engine/Solver.java` | ☐ | |
+| Implémenter `AlwaysReduceStrategy` | Stratégie dédiée qui applique `Reducer.reduce()` à chaque étape en s’appuyant sur `Backup`. | `strategy/AlwaysReduceStrategy.java` (nouveau) | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
+| Adapter `Solver` | Intégrer `alwaysReduceStrategy()`, orchestrer backup/restore dans `findSolutions`, brancher `Reducer`. | `engine/Solver.java` | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
+| Supporter la nouvelle stratégie dans l’API immuable | Ajouter la constante de stratégie et la validation associée. | `domain/Problem.java`, `api/ProblemBuilder.java` | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
+| Exposer la stratégie dans l’API publique | Déclarer `alwaysReduceStrategy()` dans `ISolver` et implémentations. | `api/ISolver.java`, `engine/Solver.java` | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
 | Couvrir par tests ciblés | Ajouter un test N-reines (8) vérifiant nb solutions = 92 et gain de nœuds vs défaut. | `test/.../TestSolverAlwaysReduce.java` (nouveau) | ☐ | |
-| Mettre à jour tests existants | Adapter tests unitaires pour accepter la 3ᵉ stratégie (Problem, autres si nécessaires). | `test/domain/TestProblem.java`, autres fichiers si impacts | ☐ | |
+| Mettre à jour tests existants | Adapter tests unitaires pour accepter la 3ᵉ stratégie (Problem, autres si nécessaires). | `test/domain/TestProblem.java`, autres fichiers si impacts | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
 | Documenter la fonctionnalité | Ajouter un paragraphe dans `PROJECT_ANALYSIS.md` ou `README.md` sur la stratégie. | `PROJECT_ANALYSIS.md`, `README.md` | ☐ | |
 
 ---

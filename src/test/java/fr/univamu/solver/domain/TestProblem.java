@@ -70,6 +70,10 @@ public class TestProblem {
         assertDoesNotThrow(() -> {
             new Problem(variables, List.of(), Problem.REDUCE_AND_CHECK_INTERVALS_STRATEGY, 1000L, true);
         });
+
+        assertDoesNotThrow(() -> {
+            new Problem(variables, List.of(), Problem.ALWAYS_REDUCE_STRATEGY, 1000L, true);
+        });
     }
 
     @Test
@@ -127,6 +131,7 @@ public class TestProblem {
         var problem1 = new Problem(variables, constraints, Problem.CHECK_INTERVALS_STRATEGY, 1000L, true);
         var problem2 = new Problem(variables, constraints, Problem.CHECK_INTERVALS_STRATEGY, 1000L, true);
         var problem3 = new Problem(variables, constraints, Problem.REDUCE_AND_CHECK_INTERVALS_STRATEGY, 1000L, true);
+        var problem4 = new Problem(variables, constraints, Problem.ALWAYS_REDUCE_STRATEGY, 1000L, true);
 
         // Problèmes identiques doivent être égaux
         assertEquals(problem1, problem2);
@@ -134,6 +139,7 @@ public class TestProblem {
 
         // Problèmes avec stratégie différente ne doivent pas être égaux
         assertNotEquals(problem1, problem3);
+        assertNotEquals(problem1, problem4);
     }
 
     @Test

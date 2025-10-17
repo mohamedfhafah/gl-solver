@@ -63,13 +63,14 @@ public class ProblemBuilder {
     /**
      * Définit la stratégie de résolution.
      *
-     * @param strategy La stratégie (CHECK_INTERVALS_STRATEGY ou REDUCE_AND_CHECK_INTERVALS_STRATEGY)
+     * @param strategy La stratégie (CHECK_INTERVALS_STRATEGY, REDUCE_AND_CHECK_INTERVALS_STRATEGY ou ALWAYS_REDUCE_STRATEGY)
      * @return this pour chaînage fluide
      * @throws IllegalArgumentException si la stratégie est invalide
      */
     public ProblemBuilder setStrategy(int strategy) {
         if (strategy != Problem.CHECK_INTERVALS_STRATEGY &&
-            strategy != Problem.REDUCE_AND_CHECK_INTERVALS_STRATEGY) {
+            strategy != Problem.REDUCE_AND_CHECK_INTERVALS_STRATEGY &&
+            strategy != Problem.ALWAYS_REDUCE_STRATEGY) {
             throw new IllegalArgumentException("Stratégie invalide: " + strategy);
         }
         this.strategy = strategy;
@@ -132,4 +133,3 @@ public class ProblemBuilder {
         return constraints.size();
     }
 }
-

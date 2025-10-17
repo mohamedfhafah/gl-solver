@@ -6,6 +6,7 @@ import fr.univamu.solver.domain.Constraint;
 import fr.univamu.solver.domain.ConstraintType;
 import fr.univamu.solver.domain.Problem;
 import fr.univamu.solver.domain.Variable;
+import fr.univamu.solver.strategy.AlwaysReduceStrategy;
 import fr.univamu.solver.strategy.DefaultStrategy;
 import fr.univamu.solver.strategy.IStrategy;
 import fr.univamu.solver.strategy.ReduceAndCheckIntervalsStrategy;
@@ -23,7 +24,6 @@ public class Solver implements ISolver {
     private final Reducer reducer;
 
     private Solutions solutions = new Solutions();
-    private boolean needsOptimization = false;
 
     /**
      * Constructeur par défaut du Solver.
@@ -41,12 +41,18 @@ public class Solver implements ISolver {
         strategy = new ReduceAndCheckIntervalsStrategy(reducer, checker);
     }
 
+    public void alwaysReduceStrategy() {
+        strategy = new AlwaysReduceStrategy(reducer, checker, variables);
+    }
+
     /**
      * Retourne le type de stratégie sous forme d'entier pour la compatibilité
      * avec ProblemBuilder (qui utilise encore l'ancien système).
      */
     private int getStrategyType() {
-        if (strategy instanceof ReduceAndCheckIntervalsStrategy) {
+        if (strategy instanceof AlwaysReduceStrategy) {
+            return 3; // ALWAYS_REDUCE_STRATEGY
+        } else if (strategy instanceof ReduceAndCheckIntervalsStrategy) {
             return 2; // REDUCE_AND_CHECK_INTERVALS_STRATEGY
         } else {
             return 1; // CHECK_INTERVALS_STRATEGY (par défaut)
@@ -71,48 +77,46 @@ public class Solver implements ISolver {
 
 
     private void findSolutions() {
-        if (++nodesCounter > maxNodes) {
-            throw new IllegalStateException("too many nodes");
-        }
-        if (!strategy.check(constraints, variables)) {
-            return;
-        }
-        var v = strategy.chooseVariable(variables);
-        if (v == null) {
-            solutions.addSolution(variables);
-            return;
-        }
-
-        int min = v.getMin();
-        int max = v.getMax();
-
-        // Utiliser la stratégie pour déterminer le pas d'exploration
-        int step = strategy.step(v);
-
-        // explorer le domaine
-        for (int value = min; value <= max; value += step) {
-            v.init(value, Math.min(value + step - 1, max));
-            findSolutions();
-        }
-        v.init(min, max);
-    }
-
-    private void registerVariableIfNeeded(Variable variable) {
-        if (variable == null) {
-            return;
-        }
-        boolean alreadyRegistered = variables.stream().anyMatch(existing -> existing == variable);
-        if (!alreadyRegistered) {
-            variables.add(variable);
-            if (reducer != null) {
-                reducer.registerVariable(variable);
+        strategy.backup();
+        try {
+            if (++nodesCounter > maxNodes) {
+                throw new IllegalStateException("too many nodes");
             }
+            if (!strategy.check(constraints, variables)) {
+                return;
+            }
+            var v = strategy.chooseVariable(variables);
+            if (v == null) {
+                solutions.addSolution(variables);
+                return;
+            }
+
+            int min = v.getMin();
+            int max = v.getMax();
+
+            // Utiliser la stratégie pour déterminer le pas d'exploration
+            int step = strategy.step(v);
+
+            // explorer le domaine
+            for (int value = min; value <= max; value += step) {
+                int upperBound = Math.min(value + step - 1, max);
+                strategy.backup();
+                try {
+                    v.init(value, upperBound);
+                    findSolutions();
+                } finally {
+                    strategy.restore();
+                }
+            }
+            v.init(min, max);
+        } finally {
+            strategy.restore();
         }
     }
 
     private Variable newVar(int min, int max) {
         var v = new Variable();
-        registerVariableIfNeeded(v);
+        variables.add(v);
         v.init(min, max);
         return v;
     }
@@ -124,7 +128,7 @@ public class Solver implements ISolver {
     public Variable newVar(String name, int min, int max) {
         var v = new Variable(name);
         v.init(min, max);
-        registerVariableIfNeeded(v);
+        variables.add(v);
         return v;
     }
 
@@ -157,9 +161,6 @@ public class Solver implements ISolver {
     }
 
     public void addAllDiffRelation(Variable... variables) {
-        for (Variable variable : variables) {
-            registerVariableIfNeeded(variable);
-        }
         for (int i = 0; i < variables.length; i++)
             for (int j = i + 1; j < variables.length; j++) {
                 diff(variables[i], variables[j]);
@@ -185,7 +186,6 @@ public class Solver implements ISolver {
     private Variable parseSimpleTerm(List<Object> terms) {
         var first = terms.removeFirst();
         if (first instanceof Variable var) {
-            registerVariableIfNeeded(var);
             return var;
         }
         if (first instanceof Integer cst) {
@@ -239,29 +239,33 @@ public class Solver implements ISolver {
     }
 
     public void addRelation(Variable a, String relation, int constant) {
-        registerVariableIfNeeded(a);
         // OPTIMISATION: Pour les relations simples avec constantes,
         // ajuster directement le domaine au lieu de créer une contrainte
         switch (relation) {
             case "=":
                 // X = constante : réduire le domaine à une seule valeur
-                a.reduce(constant, constant);
+                if (constant >= a.getMin() && constant <= a.getMax()) {
+                    a.init(constant, constant);
+                } else {
+                    // Contrainte impossible, domaine vide
+                    a.init(1, 0); // Crée un domaine vide
+                }
                 return;
             case ">":
                 // X > constante : domaine commence à constante+1
-                a.reduce(Math.max(a.getMin(), constant + 1), a.getMax());
+                a.init(Math.max(a.getMin(), constant + 1), a.getMax());
                 return;
             case ">=":
                 // X >= constante : domaine commence à constante
-                a.reduce(Math.max(a.getMin(), constant), a.getMax());
+                a.init(Math.max(a.getMin(), constant), a.getMax());
                 return;
             case "<":
                 // X < constante : domaine finit à constante-1
-                a.reduce(a.getMin(), Math.min(a.getMax(), constant - 1));
+                a.init(a.getMin(), Math.min(a.getMax(), constant - 1));
                 return;
             case "<=":
                 // X <= constante : domaine finit à constante
-                a.reduce(a.getMin(), Math.min(a.getMax(), constant));
+                a.init(a.getMin(), Math.min(a.getMax(), constant));
                 return;
             default:
                 // Pour les autres relations, utiliser l'approche normale
@@ -271,8 +275,6 @@ public class Solver implements ISolver {
     }
 
     public void addRelation(Variable a, String relation, Variable b) {
-        registerVariableIfNeeded(a);
-        registerVariableIfNeeded(b);
         switch (relation) {
             case "=":
                 eq(a, b);
@@ -319,7 +321,8 @@ public class Solver implements ISolver {
      * @return la variable résultat optimisée
      */
     public Variable expressionOptimized(Object... terms) {
-        needsOptimization = true;
+        // Pour l'instant, construction normale sans optimisation
+        // L'optimisation sera appelée manuellement après avoir ajouté toutes les relations
         return expression(terms);
     }
 
@@ -328,7 +331,6 @@ public class Solver implements ISolver {
      * Doit être appelée après avoir ajouté toutes les contraintes.
      */
     public void optimize() {
-        needsOptimization = false;
         // Trouver la variable résultat principale (celle qui n'est pas intermédiaire)
         Variable mainResult = null;
         for (Constraint c : constraints) {
@@ -441,9 +443,6 @@ public class Solver implements ISolver {
         Constraint definitionConstraint = null;
         for (Constraint c : constraints) {
             if (c.result().equals(intermediate)) {
-                if (c.type() == ConstraintType.ADD && c.var1() != null && isConstantZero(c.var1()) && c.var2() != null) {
-                    continue;
-                }
                 definitionConstraint = c;
                 break;
             }
@@ -466,18 +465,8 @@ public class Solver implements ISolver {
         // Supprimer la contrainte d'égalité
         constraints.remove(equalityConstraint);
 
-        // Supprimer la constante zéro si elle n'est plus utilisée
-        Variable zero = equalityConstraint.var1();
-        if (zero != null && isConstantZero(zero)) {
-            boolean stillUsed = constraints.stream().anyMatch(c ->
-                c.result() == zero || c.var1() == zero || c.var2() == zero);
-            if (!stillUsed) {
-                variables.removeIf(v -> v == zero);
-            }
-        }
-
         // Supprimer la variable intermédiaire
-        variables.removeIf(v -> v == intermediate);
+        variables.remove(intermediate);
     }
 
     /**
@@ -514,9 +503,6 @@ public class Solver implements ISolver {
     }
 
     public long solve() {
-        if (needsOptimization) {
-            optimize();
-        }
         // Construire le problème immuable avec ProblemBuilder
         Problem problem = buildProblem();
 

@@ -91,6 +91,12 @@ public interface ISolver {
     void reduceAndCheckIntervalsStrategy();
 
     /**
+     * Enables the always-reduce strategy which applies propagation after
+     * every decision and relies on backups to restore domains when backtracking.
+     */
+    void alwaysReduceStrategy();
+
+    /**
      * Returns the number of search nodes explored so far.
      *
      * @return the number of nodes explored.
@@ -119,4 +125,3 @@ public interface ISolver {
      */
     Solutions getSolutions();
 }
-

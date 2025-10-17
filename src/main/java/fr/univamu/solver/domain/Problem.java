@@ -15,7 +15,7 @@ import java.util.Objects;
  *
  * @param variables Liste des variables du problème (non null, copie défensive)
  * @param constraints Liste des contraintes du problème (non null, copie défensive)
- * @param strategy Stratégie de résolution (1=CHECK_INTERVALS, 2=REDUCE_AND_CHECK_INTERVALS)
+ * @param strategy Stratégie de résolution (1=CHECK_INTERVALS, 2=REDUCE_AND_CHECK_INTERVALS, 3=ALWAYS_REDUCE)
  * @param maxNodes Nombre maximum de nœuds à explorer (doit être positif)
  * @param verbose Mode verbeux pour les logs de résolution
  */
@@ -29,6 +29,7 @@ public record Problem(
     // Constantes de stratégie (pour cohérence avec Solver)
     public static final int CHECK_INTERVALS_STRATEGY = 1;
     public static final int REDUCE_AND_CHECK_INTERVALS_STRATEGY = 2;
+    public static final int ALWAYS_REDUCE_STRATEGY = 3;
 
     /**
      * Constructeur compact avec validations.
@@ -44,9 +45,11 @@ public record Problem(
         constraints = List.copyOf(constraints);
 
         // Validation de la stratégie
-        if (strategy != CHECK_INTERVALS_STRATEGY && strategy != REDUCE_AND_CHECK_INTERVALS_STRATEGY) {
+        if (strategy != CHECK_INTERVALS_STRATEGY &&
+            strategy != REDUCE_AND_CHECK_INTERVALS_STRATEGY &&
+            strategy != ALWAYS_REDUCE_STRATEGY) {
             throw new IllegalArgumentException("Stratégie invalide: " + strategy +
-                ". Doit être CHECK_INTERVALS_STRATEGY ou REDUCE_AND_CHECK_INTERVALS_STRATEGY");
+                ". Doit être CHECK_INTERVALS_STRATEGY, REDUCE_AND_CHECK_INTERVALS_STRATEGY ou ALWAYS_REDUCE_STRATEGY");
         }
 
         // Validation de maxNodes
@@ -106,4 +109,3 @@ public record Problem(
             variables.size(), constraints.size(), strategy, maxNodes, verbose);
     }
 }
-
