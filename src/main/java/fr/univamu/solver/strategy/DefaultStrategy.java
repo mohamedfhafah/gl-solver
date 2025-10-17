@@ -89,5 +89,14 @@ public class DefaultStrategy implements IStrategy {
             return tempChecker.checkAll();
         }
     }
-}
 
+    @Override
+    public void backup() {
+        // Stratégie par défaut : aucun état supplémentaire à sauvegarder
+    }
+
+    @Override
+    public void restore() {
+        // Stratégie par défaut : aucun état à restaurer
+    }
+}

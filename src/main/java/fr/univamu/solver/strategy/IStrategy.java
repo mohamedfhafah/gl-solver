@@ -52,5 +52,21 @@ public interface IStrategy {
      * @return true si le problème est encore consistant, false sinon
      */
     boolean check(List<Constraint> constraints, List<Variable> variables);
-}
 
+    /**
+     * Sauvegarde l'état nécessaire de la stratégie avant une exploration récursive.
+     * Par défaut, ne fait rien. Les stratégies avançées peuvent l'utiliser pour
+     * mémoriser les domaines des variables ou d'autres informations de contexte.
+     */
+    default void backup() {
+        // Par défaut, aucune sauvegarde nécessaire
+    }
+
+    /**
+     * Restaure l'état précédemment sauvegardé par {@link #backup()} après un retour arrière.
+     * Par défaut, ne fait rien.
+     */
+    default void restore() {
+        // Par défaut, rien à restaurer
+    }
+}

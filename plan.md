@@ -13,7 +13,7 @@
 | Tâche | Détails & impacts principaux | Fichiers pressentis | Statut | Notes |
 |-------|------------------------------|----------------------|--------|-------|
 | Définir `Backup` | Sauvegarde/restauration des domaines variables pour supporter des réductions multiples par décision. | `fr/univamu/solver/strategy/Backup.java` (nouveau) | ☑ | 2025-10-17 Codex |
-| Étendre `IStrategy` | Ajouter `backup()`/`restore()` (et toute méthode nécessaire) + ajuster implémentations existantes. | `strategy/IStrategy.java`, `strategy/DefaultStrategy.java`, `strategy/ReduceAndCheckIntervalsStrategy.java` | ☐ | |
+| Étendre `IStrategy` | Ajouter `backup()`/`restore()` (et toute méthode nécessaire) + ajuster implémentations existantes. | `strategy/IStrategy.java`, `strategy/DefaultStrategy.java`, `strategy/ReduceAndCheckIntervalsStrategy.java` | ☑ | 2025-10-17 Codex |
 | Implémenter `AlwaysReduceStrategy` | Stratégie dédiée qui applique `Reducer.reduce()` à chaque étape en s’appuyant sur `Backup`. | `strategy/AlwaysReduceStrategy.java` (nouveau) | ☐ | |
 | Adapter `Solver` | Intégrer `alwaysReduceStrategy()`, orchestrer backup/restore dans `findSolutions`, brancher `Reducer`. | `engine/Solver.java` | ☐ | |
 | Supporter la nouvelle stratégie dans l’API immuable | Ajouter la constante de stratégie et la validation associée. | `domain/Problem.java`, `api/ProblemBuilder.java` | ☐ | |
