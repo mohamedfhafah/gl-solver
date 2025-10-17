@@ -97,6 +97,15 @@ public interface ISolver {
     void alwaysReduceStrategy();
 
     /**
+     * Configure le solveur pour minimiser la valeur de la variable donnée.
+     * Active une stratégie dédiée héritant d'alwaysReduce afin de resserrer
+     * progressivement le domaine de l'objectif.
+     *
+     * @param objective variable à minimiser (doit être nommée)
+     */
+    void minimize(Variable objective);
+
+    /**
      * Returns the number of search nodes explored so far.
      *
      * @return the number of nodes explored.

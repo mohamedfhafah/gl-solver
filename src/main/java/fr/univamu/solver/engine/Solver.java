@@ -10,6 +10,7 @@ import fr.univamu.solver.strategy.AlwaysReduceStrategy;
 import fr.univamu.solver.strategy.DefaultStrategy;
 import fr.univamu.solver.strategy.IStrategy;
 import fr.univamu.solver.strategy.ReduceAndCheckIntervalsStrategy;
+import fr.univamu.solver.strategy.OptimizationStrategy;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -43,6 +44,20 @@ public class Solver implements ISolver {
 
     public void alwaysReduceStrategy() {
         strategy = new AlwaysReduceStrategy(reducer, checker, variables);
+    }
+
+    public void minimize(Variable objective) {
+        if (objective == null) {
+            throw new IllegalArgumentException("objective variable cannot be null");
+        }
+        if (objective.getName() == null || objective.getName().isBlank()) {
+            throw new IllegalArgumentException("objective variable must be named for minimization");
+        }
+        registerVariableIfNeeded(objective);
+        solutions.setDisplaySolutions(false);
+        solutions.setOnSolutionFound(null);
+        solutions.reset();
+        strategy = new OptimizationStrategy(reducer, checker, variables, solutions, objective);
     }
 
     /**
@@ -549,10 +564,19 @@ public class Solver implements ISolver {
         solutions.reset();
         this.nodesCounter = 0;
 
+        if (strategy instanceof OptimizationStrategy optimizationStrategy) {
+            optimizationStrategy.prepareForSearch();
+        }
+
         // Appliquer la phase before() de la stratégie (réduction éventuelle)
         strategy.before(variables, constraints);
 
         findSolutions();
+
+        if (strategy instanceof OptimizationStrategy optimizationStrategy) {
+            optimizationStrategy.applyBestSolutions();
+        }
+
         return solutions.getCount();
     }
 

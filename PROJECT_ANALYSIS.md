@@ -73,11 +73,24 @@ Résoudre des problèmes combinatoires complexes tels que :
 **Stratégies de résolution** :
 1. **CHECK_INTERVALS_STRATEGY** : Vérification basique des contraintes
 2. **REDUCE_AND_CHECK_INTERVALS_STRATEGY** : Réduction des domaines + vérification
+3. **ALWAYS_REDUCE_STRATEGY** : Propagation systématique à chaque branchement avec sauvegarde/restauration des domaines
+4. **OPTIMIZATION_STRATEGY** : Minimisation d’une variable objectif avec resserrement incrémental du domaine
 
 **Algorithme de résolution** :
 - **Propagation** : Réduction des domaines par contraintes arithmétiques
 - **Recherche** : Exploration en profondeur avec heuristique "first-fail" (variable avec domaine le plus petit)
 - **Branching** : Découpage adaptatif du domaine selon la taille
+
+#### Focus sur `AlwaysReduceStrategy`
+- Appuie chaque décision sur une propagation complète (`Reducer.reduce()`) et restaure les domaines via une pile de sauvegardes (`Backup`).
+- Supprime l'accumulation d'incohérences en revenant sur les choix d'exploration grâce aux méthodes `IStrategy.backup()/restore()`.
+- Testée sur le problème des **8 reines** : même nombre de solutions (92) qu'avec la stratégie `reduceAndCheckIntervals`, tout en explorant strictement moins de nœuds (`TestSolverAlwaysReduce` vérifie que le compteur de nœuds diminue). La démonstration CLI met en évidence un gain ~99 % sur les nœuds explorés.
+
+#### Focus sur `OptimizationStrategy`
+- Hérite d’`AlwaysReduceStrategy` et cible une variable objectif nommée.
+- À chaque solution meilleure, réduit la borne supérieure du domaine objectif, déclenche une nouvelle propagation et purge les solutions dominées.
+- S’appuie sur les callbacks de `Solutions` (`setOnSolutionSnapshot`) pour journaliser les solutions trouvées en streaming et ne persister que les optima.
+- La démo CLI montre la minimisation d’un problème d’affectation (coût 15) ainsi qu’un scénario multi-optima (2 affectations équivalentes).
 
 ### 2.5 Classe `Constraint`
 **Responsabilité** : Représentation d'une contrainte arithmétique binaire.
@@ -180,7 +193,25 @@ Le code dépend d'abstractions :
 - Validation des différentes stratégies de résolution
 - Tests de performance (comparaison des compteurs de nœuds)
 
+### Tests de stratégie (`TestSolverAlwaysReduce.java`)
+- Compare `reduceAndCheckIntervalsStrategy` et `alwaysReduceStrategy` sur le problème des 8 reines.
+- Garantit les 92 solutions attendues et confirme une réduction du nombre de nœuds explorés avec la stratégie alwaysReduce.
+
+### Tests d’optimisation (`TestOptimizationStrategy.java`)
+- Valide la minimisation du coût pour un problème d’affectation 3×4.
+- Vérifie que seule la solution optimale est conservée, que le coût minimal est respecté et que le compteur de nœuds reste cohérent.
+
 ---
+
+## 9. Optimisation et démonstrations associées
+
+- `Main.java` propose désormais :
+  - Une comparaison alwaysReduce vs reduceAndCheck sur les 8 reines (gain ~99 % de nœuds).
+  - Un scénario de minimisation de coût (affectation 3×4) et un second avec multiples optima (affectation 3×3) illustrant la collecte exclusive des solutions optimales.
+  - Un streaming contrôlé des solutions via `Solutions.setOnSolutionSnapshot`.
+  - Une exploration progressive avec plafonds `maxNodes` croissants pour visualiser l’impact du backtracking renforcé.
+- `Solutions` expose de nouveaux hooks (`setOnSolutionSnapshot`, `replaceStoredSolutions`) pour filtrer ou journaliser les solutions à la volée.
+- La CLI affiche maintenant ces cas d’usage, offrant un panorama complet des fonctionnalités implémentées.
 
 ## 8. Suite de Cryptarithmes Développée
 

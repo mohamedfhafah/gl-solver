@@ -20,6 +20,7 @@ public class Solutions {
     private final List<List<Assignment>> storedSolutions = new ArrayList<>();
     private Consumer<Map<String, Integer>> onSolutionFound = null;
     private boolean displaySolutions = true;
+    private Consumer<List<Assignment>> onSolutionSnapshot = null;
 
     /**
      * Ajoute une solution trouvée par le solveur.
@@ -33,6 +34,10 @@ public class Solutions {
             .filter(Variable::isNamed)
             .map(v -> new Assignment(v.getName(), v.getFixedValue()))
             .toList();
+
+        if (onSolutionSnapshot != null) {
+            onSolutionSnapshot.accept(List.copyOf(snapshot));
+        }
         storedSolutions.add(snapshot);
 
         if (displaySolutions) {
@@ -73,6 +78,15 @@ public class Solutions {
     }
 
     /**
+     * Définit un callback exécuté à chaque solution trouvée avec la liste complète des affectations.
+     *
+     * @param callback fonction invoquée avec les affectations de la solution (liste immuable)
+     */
+    public void setOnSolutionSnapshot(Consumer<List<Assignment>> callback) {
+        this.onSolutionSnapshot = callback;
+    }
+
+    /**
      * Active ou désactive l'affichage des solutions.
      */
     public void setDisplaySolutions(boolean display) {
@@ -86,5 +100,17 @@ public class Solutions {
         this.count = 0;
         this.storedSolutions.clear();
     }
-}
 
+    /**
+     * Remplace les solutions stockées par une nouvelle collection (typiquement issue d'une optimisation).
+     *
+     * @param newSolutions nouvelles solutions à conserver
+     */
+    public void replaceStoredSolutions(List<List<Assignment>> newSolutions) {
+        this.storedSolutions.clear();
+        for (List<Assignment> solution : newSolutions) {
+            this.storedSolutions.add(List.copyOf(solution));
+        }
+        this.count = this.storedSolutions.size();
+    }
+}

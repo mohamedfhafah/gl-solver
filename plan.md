@@ -20,7 +20,7 @@
 | Exposer la stratégie dans l’API publique | Déclarer `alwaysReduceStrategy()` dans `ISolver` et implémentations. | `api/ISolver.java`, `engine/Solver.java` | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
 | Couvrir par tests ciblés | Ajouter un test N-reines (8) vérifiant nb solutions = 92 et gain de nœuds vs défaut. | `test/.../TestSolverAlwaysReduce.java` (nouveau) | ☑ | 2025-10-17 Codex (tests 💻 via ./gradlew test) |
 | Mettre à jour tests existants | Adapter tests unitaires pour accepter la 3ᵉ stratégie (Problem, autres si nécessaires). | `test/domain/TestProblem.java`, autres fichiers si impacts | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
-| Documenter la fonctionnalité | Ajouter un paragraphe dans `PROJECT_ANALYSIS.md` ou `README.md` sur la stratégie. | `PROJECT_ANALYSIS.md`, `README.md` | ☐ | |
+| Documenter la fonctionnalité | Ajouter un paragraphe dans `PROJECT_ANALYSIS.md` ou `README.md` sur la stratégie. | `PROJECT_ANALYSIS.md`, `README.md` | ☑ | 2025-10-17 Codex — section dédiée dans PROJECT_ANALYSIS.md |
 
 ---
 
@@ -28,9 +28,10 @@
 | Tâche | Détails & impacts principaux | Fichiers pressentis | Statut | Notes |
 |-------|------------------------------|----------------------|--------|-------|
 | Créer `OptimizationStrategy` | Hérite de `AlwaysReduceStrategy`, connait la variable objectif et la meilleure valeur courante. | `strategy/OptimizationStrategy.java` (nouveau) | ☐ | |
-| Adapter `Solver` pour la minimisation | Méthode `minimize(Variable)` ou équivalent + hookups (callbacks solutions, filtrage). | `engine/Solver.java`, `engine/Solutions.java` | ☐ | |
-| Bloquer solutions non optimales | Réduire le domaine objectif après chaque solution & purger les solutions dominées. | `strategy/OptimizationStrategy.java`, `engine/Solutions.java` | ☐ | |
-| Couvrir par test Assignment | Implémenter `buildAssignmentProblem` + test JUnit validant la solution minimale. | `test/.../TestOptimizationStrategy.java` (nouveau) | ☐ | |
+| Créer `OptimizationStrategy` | Hérite de `AlwaysReduceStrategy`, connait la variable objectif et la meilleure valeur courante. | `strategy/OptimizationStrategy.java` (nouveau) | ☑ | 2025-10-17 Codex |
+| Adapter `Solver` pour la minimisation | Méthode `minimize(Variable)` ou équivalent + hookups (callbacks solutions, filtrage). | `engine/Solver.java`, `engine/Solutions.java` | ☑ | 2025-10-17 Codex |
+| Bloquer solutions non optimales | Réduire le domaine objectif après chaque solution & purger les solutions dominées. | `strategy/OptimizationStrategy.java`, `engine/Solutions.java` | ☑ | 2025-10-17 Codex |
+| Couvrir par test Assignment | Implémenter `buildAssignmentProblem` + test JUnit validant la solution minimale. | `test/.../TestOptimizationStrategy.java` (nouveau) | ☑ | 2025-10-17 Codex (tests 💻 via ./gradlew test) |
 | Démonstration dans Main (option) | Ajouter un scénario CLI pour illustrer la minimisation. | `Main.java` | ☐ | |
 
 ---
@@ -39,7 +40,7 @@
 | Tâche | Détails & impacts principaux | Fichiers pressentis | Statut | Notes |
 |-------|------------------------------|----------------------|--------|-------|
 | Vérifier compatibilité rétro | S’assurer que les stratégies existantes restent inchangées (tests régression). | Tests existants | ☐ | |
-| Mettre à jour l’analyse projet | Compléter `PROJECT_ANALYSIS.md` avec les nouvelles briques et résultats de perf/tests. | `PROJECT_ANALYSIS.md` | ☐ | |
+| Mettre à jour l’analyse projet | Compléter `PROJECT_ANALYSIS.md` avec les nouvelles briques et résultats de perf/tests. | `PROJECT_ANALYSIS.md` | ☑ | 2025-10-17 Codex — ajout section alwaysReduce |
 | Préparer plan de commits | Définir une séquence de commits logique (analyse → alwaysReduce → optimisation). | Journal interne | ☐ | |
 
 ---

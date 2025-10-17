@@ -10,6 +10,7 @@ import fr.univamu.solver.domain.Variable;
 import fr.univamu.solver.engine.Solutions;
 import fr.univamu.solver.engine.Solver;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,11 @@ public final class Main {
         List<Demo> demos = List.of(
             new Demo("Cryptarithmes multi-niveaux", Main::demoCryptarithms),
             new Demo("Optimisation d'expressions arithmétiques", Main::demoExpressionOptimisation),
+            new Demo("Stratégie alwaysReduce sur les N-Reines", Main::demoAlwaysReduceQueens),
+            new Demo("Minimisation d'un coût d'affectation", Main::demoAssignmentOptimization),
+            new Demo("Minimisation avec multiples optima", Main::demoAssignmentMultipleOptima),
+            new Demo("Streaming de solutions via callbacks", Main::demoSolutionStreaming),
+            new Demo("Recherche progressive par plafond de nœuds", Main::demoProgressiveSearch),
             new Demo("Construction de problèmes immuables (ProblemBuilder)", Main::demoProblemBuilder),
             new Demo("Boîte à outils Interval : opérations & vérifications", Main::demoIntervals),
             new Demo("Constraint record & réduction avancée de DIFF", Main::demoConstraintAndDiffReduction)
@@ -291,7 +297,218 @@ public final class Main {
     }
 
     // ---------------------------------------------------------------------
-    // Demo 3 – ProblemBuilder
+    // Demo 3 – Stratégie alwaysReduce (N-Reines)
+    // ---------------------------------------------------------------------
+
+    private static void demoAlwaysReduceQueens() {
+        final int n = 8;
+        System.out.println(SUB_SECTION);
+        System.out.printf("♛ Problème des %d reines – comparaison des stratégies%n", n);
+        System.out.println(SUB_SECTION);
+
+        Solver baseline = buildQueensSolver(n);
+        baseline.reduceAndCheckIntervalsStrategy();
+        long baselineSolutions = baseline.solve();
+        long baselineNodes = baseline.getNodesCounter();
+
+        Solver alwaysReduce = buildQueensSolver(n);
+        alwaysReduce.alwaysReduceStrategy();
+        long alwaysSolutions = alwaysReduce.solve();
+        long alwaysNodes = alwaysReduce.getNodesCounter();
+
+        System.out.printf("   • reduceAndCheck : %d solutions, %d nœuds%n", baselineSolutions, baselineNodes);
+        System.out.printf("   • alwaysReduce    : %d solutions, %d nœuds%n", alwaysSolutions, alwaysNodes);
+        if (baselineSolutions != alwaysSolutions) {
+            System.out.println("   ⚠️  Les deux stratégies ne trouvent pas le même nombre de solutions !");
+        } else if (baselineNodes > 0) {
+            double gain = 100.0 * (baselineNodes - alwaysNodes) / baselineNodes;
+            System.out.printf("   ➜ Variation sur les nœuds explorés : %.1f%%%n", gain);
+        }
+
+        List<List<Assignment>> solutions = alwaysReduce.getSolutions().getStoredSolutions();
+        if (!solutions.isEmpty()) {
+            System.out.println("   • Exemple de solution : " + formatAssignments(solutions.get(0)));
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Demo 4 – Optimisation d'affectation (minimisation)
+    // ---------------------------------------------------------------------
+
+    private static void demoAssignmentOptimization() {
+        System.out.println(SUB_SECTION);
+        System.out.println("📉 Problème d'affectation – minimisation du coût total");
+        System.out.println(SUB_SECTION);
+
+        int[][] costs = {
+            {8, 5, 9, 9},
+            {4, 2, 6, 4},
+            {7, 3, 7, 8}
+        };
+
+        Solver baseline = buildAssignmentProblem(costs, false);
+        long baselineSolutions = baseline.solve();
+        long baselineNodes = baseline.getNodesCounter();
+        List<List<Assignment>> baselineSolutionsList = baseline.getSolutions().getStoredSolutions();
+        int bestBaselineCost = baselineSolutionsList.stream()
+            .mapToInt(solution -> extractAssignmentValue(solution, "cost"))
+            .min()
+            .orElseThrow();
+
+        System.out.printf("   • Sans minimisation : %d solutions, meilleur coût = %d, nœuds = %d%n",
+            baselineSolutions, bestBaselineCost, baselineNodes);
+
+        Solver optimized = buildAssignmentProblem(costs, true);
+        long optimizedSolutions = optimized.solve();
+        long optimizedNodes = optimized.getNodesCounter();
+        List<List<Assignment>> optimalSolutions = optimized.getSolutions().getStoredSolutions();
+        int optimalCost = optimalSolutions.isEmpty()
+            ? bestBaselineCost
+            : extractAssignmentValue(optimalSolutions.get(0), "cost");
+
+        System.out.printf("   • Avec minimisation : %d solution(s) optimale(s), coût = %d, nœuds = %d%n",
+            optimizedSolutions, optimalCost, optimizedNodes);
+
+        if (baselineNodes > 0 && optimizedNodes != baselineNodes) {
+            double gain = 100.0 * (baselineNodes - optimizedNodes) / baselineNodes;
+            System.out.printf("   ➜ Variation sur les nœuds explorés : %.1f%%%n", gain);
+        }
+
+        if (!optimalSolutions.isEmpty()) {
+            System.out.println("   • Affectations optimales :");
+            optimalSolutions.stream()
+                .sorted((s1, s2) -> Integer.compare(
+                    extractAssignmentValue(s1, "cost"),
+                    extractAssignmentValue(s2, "cost")))
+                .limit(3)
+                .map(Main::formatAssignments)
+                .forEach(solution -> System.out.println("      • " + solution));
+            if (optimalSolutions.size() > 3) {
+                System.out.printf("      • ... (%d solutions optimales supplémentaires)%n",
+                    optimalSolutions.size() - 3);
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Demo 5 – Minimisation avec multiples optima
+    // ---------------------------------------------------------------------
+
+    private static void demoAssignmentMultipleOptima() {
+        System.out.println(SUB_SECTION);
+        System.out.println("📊 Minimisation avec plusieurs solutions optimales");
+        System.out.println(SUB_SECTION);
+
+        int[][] costs = {
+            {1, 1, 5},
+            {1, 1, 5},
+            {5, 5, 1}
+        };
+
+        Solver baseline = buildAssignmentProblem(costs, false);
+        long totalSolutions = baseline.solve();
+        List<List<Assignment>> baselineSolutions = baseline.getSolutions().getStoredSolutions();
+        int bestCost = baselineSolutions.stream()
+            .mapToInt(solution -> extractAssignmentValue(solution, "cost"))
+            .min()
+            .orElseThrow();
+        long optimalCount = baselineSolutions.stream()
+            .filter(solution -> extractAssignmentValue(solution, "cost") == bestCost)
+            .count();
+
+        System.out.printf("   • Sans minimisation : %d solutions, %d optimales (coût = %d)%n",
+            totalSolutions, optimalCount, bestCost);
+
+        Solver optimized = buildAssignmentProblem(costs, true);
+        long optimalSolutions = optimized.solve();
+        List<List<Assignment>> optimalAssignments = optimized.getSolutions().getStoredSolutions();
+        System.out.printf("   • Avec minimisation : %d solution(s) optimale(s) recensées%n", optimalSolutions);
+
+        optimalAssignments.stream()
+            .map(Main::formatAssignments)
+            .forEach(solution -> System.out.println("      • " + solution));
+    }
+
+    // ---------------------------------------------------------------------
+    // Demo 6 – Streaming de solutions
+    // ---------------------------------------------------------------------
+
+    private static void demoSolutionStreaming() {
+        System.out.println(SUB_SECTION);
+        System.out.println("📡 Streaming de solutions (limite configurable)");
+        System.out.println(SUB_SECTION);
+
+        Solver solver = newConfiguredSolver(true);
+        solver.getSolutions().setDisplaySolutions(false);
+
+        var a = solver.newVar("A", 0, 4);
+        var b = solver.newVar("B", 0, 4);
+        solver.addRelation(solver.expression(a, "+", b), "=", 4);
+
+        final int limit = 6;
+        final int[] streamed = {0};
+
+        solver.getSolutions().setOnSolutionSnapshot(solution -> {
+            if (streamed[0] < limit) {
+                streamed[0]++;
+                System.out.println("   • " + formatAssignments(solution));
+            }
+        });
+        solver.getSolutions().setOnSolutionFound(solution -> {
+            if (streamed[0] >= limit) {
+                throw new StopSearchException();
+            }
+        });
+
+        boolean interrupted = false;
+        try {
+            solver.solve();
+        } catch (StopSearchException ignored) {
+            interrupted = true;
+        } finally {
+            solver.getSolutions().setOnSolutionFound(null);
+            solver.getSolutions().setOnSolutionSnapshot(null);
+        }
+
+        System.out.printf("   ➜ %d solutions affichées (%s)%n",
+            streamed[0],
+            interrupted ? "limite atteinte" : "recherche complète");
+    }
+
+    // ---------------------------------------------------------------------
+    // Demo 7 – Recherche progressive par plafond de nœuds
+    // ---------------------------------------------------------------------
+
+    private static void demoProgressiveSearch() {
+        System.out.println(SUB_SECTION);
+        System.out.println("⏳ Exploration progressive avec plafonds de nœuds");
+        System.out.println(SUB_SECTION);
+
+        long[] limits = {500, 2_000, 10_000, 100_000};
+        for (long limit : limits) {
+            Solver solver = buildQueensSolver(8);
+            solver.alwaysReduceStrategy();
+            solver.setMaxNodes(limit);
+            long start = System.currentTimeMillis();
+            boolean limitReached = false;
+            long solutions = 0;
+            try {
+                solutions = solver.solve();
+            } catch (IllegalStateException ex) {
+                limitReached = true;
+            }
+            long duration = System.currentTimeMillis() - start;
+            long nodes = solver.getNodesCounter();
+            System.out.printf("   • maxNodes=%-7d → solutions=%-3d, nœuds=%-7d, temps=%3d ms%s%n",
+                limit, solutions, nodes, duration, limitReached ? " (interrompu)" : "");
+            if (!limitReached && solutions >= 92) {
+                break;
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Demo 8 – ProblemBuilder
     // ---------------------------------------------------------------------
 
     private static void demoProblemBuilder() {
@@ -423,7 +640,7 @@ public final class Main {
     }
 
     // ---------------------------------------------------------------------
-    // Demo 4 – Intervalles
+    // Demo 6 – Intervalles
     // ---------------------------------------------------------------------
 
     private static void demoIntervals() {
@@ -498,7 +715,7 @@ public final class Main {
     }
 
     // ---------------------------------------------------------------------
-    // Demo 5 – Constraint record & réduction de DIFF
+    // Demo 7 – Constraint record & réduction de DIFF
     // ---------------------------------------------------------------------
 
     private static void demoConstraintAndDiffReduction() {
@@ -536,6 +753,90 @@ public final class Main {
     // ---------------------------------------------------------------------
     // Helpers
     // ---------------------------------------------------------------------
+
+    private static Solver buildQueensSolver(int n) {
+        Solver solver = new Solver();
+        solver.setVerbose(false);
+        solver.getSolutions().setDisplaySolutions(false);
+
+        Variable[] queens = new Variable[n];
+        Variable[] diagonals1 = new Variable[n];
+        Variable[] diagonals2 = new Variable[n];
+        for (int i = 0; i < n; i++) {
+            queens[i] = solver.newVar("R" + i, 1, n);
+            diagonals1[i] = solver.expression(queens[i], "+", i);
+            diagonals2[i] = solver.expression(queens[i], "-", i);
+        }
+
+        solver.addAllDiffRelation(queens);
+        solver.addAllDiffRelation(diagonals1);
+        solver.addAllDiffRelation(diagonals2);
+        return solver;
+    }
+
+    private static Solver buildAssignmentProblem(int[][] costs, boolean withOptimization) {
+        Solver solver = new Solver();
+        solver.setVerbose(false);
+        solver.getSolutions().setDisplaySolutions(false);
+
+        int nbTasks = costs.length;
+        int nbAgents = costs[0].length;
+        Variable[][] matrix = new Variable[nbTasks][nbAgents];
+
+        for (int t = 0; t < nbTasks; t++) {
+            for (int a = 0; a < nbAgents; a++) {
+                matrix[t][a] = solver.newVar("T" + t + "A" + a, 0, 1);
+            }
+        }
+
+        var zero = solver.newConstant(0);
+
+        for (int t = 0; t < nbTasks; t++) {
+            var sum = zero;
+            for (int a = 0; a < nbAgents; a++) {
+                sum = solver.expression(sum, "+", matrix[t][a]);
+            }
+            solver.addRelation(sum, "=", 1);
+        }
+
+        for (int a = 0; a < nbAgents; a++) {
+            var sum = zero;
+            for (int t = 0; t < nbTasks; t++) {
+                sum = solver.expression(sum, "+", matrix[t][a]);
+            }
+            solver.addRelation(sum, "<=", 1);
+        }
+
+        var costExpression = zero;
+        for (int t = 0; t < nbTasks; t++) {
+            for (int a = 0; a < nbAgents; a++) {
+                costExpression = solver.expression(costExpression, "+", matrix[t][a], "*", costs[t][a]);
+            }
+        }
+        var costVar = solver.newVar("cost", 0, 1_000);
+        solver.addRelation(costExpression, "=", costVar);
+
+        solver.alwaysReduceStrategy();
+        if (withOptimization) {
+            solver.minimize(costVar);
+        }
+        return solver;
+    }
+
+    private static int extractAssignmentValue(List<Assignment> assignments, String variableName) {
+        return assignments.stream()
+            .filter(a -> variableName.equals(a.variableName()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("Variable '" + variableName + "' absente de la solution"))
+            .value();
+    }
+
+    private static String formatAssignments(List<Assignment> assignments) {
+        return assignments.stream()
+            .sorted(Comparator.comparing(Assignment::variableName))
+            .map(a -> a.variableName() + "=" + a.value())
+            .collect(Collectors.joining(", "));
+    }
 
     private static Solver newConfiguredSolver(boolean useReducer) {
         Solver solver = new Solver();
