@@ -18,7 +18,7 @@
 | Adapter `Solver` | Intégrer `alwaysReduceStrategy()`, orchestrer backup/restore dans `findSolutions`, brancher `Reducer`. | `engine/Solver.java` | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
 | Supporter la nouvelle stratégie dans l’API immuable | Ajouter la constante de stratégie et la validation associée. | `domain/Problem.java`, `api/ProblemBuilder.java` | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
 | Exposer la stratégie dans l’API publique | Déclarer `alwaysReduceStrategy()` dans `ISolver` et implémentations. | `api/ISolver.java`, `engine/Solver.java` | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
-| Couvrir par tests ciblés | Ajouter un test N-reines (8) vérifiant nb solutions = 92 et gain de nœuds vs défaut. | `test/.../TestSolverAlwaysReduce.java` (nouveau) | ☐ | |
+| Couvrir par tests ciblés | Ajouter un test N-reines (8) vérifiant nb solutions = 92 et gain de nœuds vs défaut. | `test/.../TestSolverAlwaysReduce.java` (nouveau) | ☑ | 2025-10-17 Codex (tests 💻 via ./gradlew test) |
 | Mettre à jour tests existants | Adapter tests unitaires pour accepter la 3ᵉ stratégie (Problem, autres si nécessaires). | `test/domain/TestProblem.java`, autres fichiers si impacts | ☑ | 2025-10-17 Codex (tests KO : JVM manquante) |
 | Documenter la fonctionnalité | Ajouter un paragraphe dans `PROJECT_ANALYSIS.md` ou `README.md` sur la stratégie. | `PROJECT_ANALYSIS.md`, `README.md` | ☐ | |
 

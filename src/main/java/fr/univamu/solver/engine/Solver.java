@@ -114,9 +114,22 @@ public class Solver implements ISolver {
         }
     }
 
+    private void registerVariableIfNeeded(Variable variable) {
+        if (variable == null) {
+            return;
+        }
+        boolean alreadyRegistered = variables.stream().anyMatch(existing -> existing == variable);
+        if (!alreadyRegistered) {
+            variables.add(variable);
+            if (reducer != null) {
+                reducer.registerVariable(variable);
+            }
+        }
+    }
+
     private Variable newVar(int min, int max) {
         var v = new Variable();
-        variables.add(v);
+        registerVariableIfNeeded(v);
         v.init(min, max);
         return v;
     }
@@ -128,7 +141,7 @@ public class Solver implements ISolver {
     public Variable newVar(String name, int min, int max) {
         var v = new Variable(name);
         v.init(min, max);
-        variables.add(v);
+        registerVariableIfNeeded(v);
         return v;
     }
 
@@ -161,6 +174,9 @@ public class Solver implements ISolver {
     }
 
     public void addAllDiffRelation(Variable... variables) {
+        for (Variable variable : variables) {
+            registerVariableIfNeeded(variable);
+        }
         for (int i = 0; i < variables.length; i++)
             for (int j = i + 1; j < variables.length; j++) {
                 diff(variables[i], variables[j]);
@@ -186,6 +202,7 @@ public class Solver implements ISolver {
     private Variable parseSimpleTerm(List<Object> terms) {
         var first = terms.removeFirst();
         if (first instanceof Variable var) {
+            registerVariableIfNeeded(var);
             return var;
         }
         if (first instanceof Integer cst) {
@@ -239,6 +256,7 @@ public class Solver implements ISolver {
     }
 
     public void addRelation(Variable a, String relation, int constant) {
+        registerVariableIfNeeded(a);
         // OPTIMISATION: Pour les relations simples avec constantes,
         // ajuster directement le domaine au lieu de créer une contrainte
         switch (relation) {
@@ -275,6 +293,8 @@ public class Solver implements ISolver {
     }
 
     public void addRelation(Variable a, String relation, Variable b) {
+        registerVariableIfNeeded(a);
+        registerVariableIfNeeded(b);
         switch (relation) {
             case "=":
                 eq(a, b);
@@ -464,6 +484,16 @@ public class Solver implements ISolver {
 
         // Supprimer la contrainte d'égalité
         constraints.remove(equalityConstraint);
+
+        // Supprimer la constante zéro si elle n'est plus utilisée
+        Variable zero = equalityConstraint.var1();
+        if (zero != null && isConstantZero(zero)) {
+            boolean stillUsed = constraints.stream().anyMatch(c ->
+                c.result() == zero || c.var1() == zero || c.var2() == zero);
+            if (!stillUsed) {
+                variables.remove(zero);
+            }
+        }
 
         // Supprimer la variable intermédiaire
         variables.remove(intermediate);
