@@ -39,9 +39,14 @@ tasks.test {
 
 tasks.jacocoTestReport {
     dependsOn(tasks.test) // tests are required to run before generating the report
-}
 
-tasks.jacocoTestReport {
+    val excludedMain = classDirectories.files.map {
+        fileTree(it) {
+            exclude("fr/univamu/solver/Main.class")
+        }
+    }
+    classDirectories.setFrom(excludedMain)
+
     reports {
         xml.required = true
         csv.required = true
