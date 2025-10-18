@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Service d'exemple pour montrer comment encapsuler l'appel au solver.
@@ -106,17 +107,19 @@ public class SolverService {
     }
 
     private int[][] buildCostsMatrix(List<String> friends, List<String> activities) {
+        var datasetMap = dataset.friends().stream()
+            .collect(Collectors.toMap(PreferenceDataset.PreferenceEntry::name, PreferenceDataset.PreferenceEntry::preferences));
+
         int[][] costs = new int[friends.size()][activities.size()];
         for (int f = 0; f < friends.size(); f++) {
             String friendName = friends.get(f);
-            var entry = dataset.friends().stream()
-                .filter(e -> e.name().equals(friendName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Friend not found in dataset: " + friendName));
+            var preferences = datasetMap.get(friendName);
 
             for (int a = 0; a < activities.size(); a++) {
                 String activity = activities.get(a);
-                costs[f][a] = entry.preferences().getOrDefault(activity, 5);
+                int defaultCost = (f + a) % 5 + 1;
+                int cost = preferences != null ? preferences.getOrDefault(activity, defaultCost) : defaultCost;
+                costs[f][a] = cost;
             }
         }
         return costs;
