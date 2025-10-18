@@ -3,14 +3,14 @@
 Ce dossier regroupe deux prototypes indépendants illustrant l'utilisation du solver :
 
 1. **JavaFX – Planning de soirée** (`javafx-planning`)
-   - Table éditable pour saisir les préférences (coûts) des amis.
-   - Bouton « Planifier » pour lancer le solver et bouton « Solution suivante » pour parcourir les 3 meilleures affectations.
-   - Animation de mise à jour + bouton « Réinitialiser » pour revenir aux valeurs par défaut.
+   - Table éditable pour saisir les préférences (1 = coup de cœur, 10 = à éviter).
+   - Modes « planning individuel » et « activité commune » (top 3 solutions avec description, coût, nœuds).
+   - Animations fluides, bouton « Solution suivante » et « Réinitialiser ».
    - Commande : `./gradlew run` (depuis le dossier) ou `../launch-demo.sh javafx`.
 
 2. **Spring Boot – API & interface web** (`web-planning`)
-   - Endpoint `/planifier` qui retourne deux objectifs : coût minimal et solution équilibrée.
-   - Interface web (http://localhost:8080) avec cartes de résultats, jauge de nœuds explorés et historique des requêtes.
+   - Endpoint `/planifier` retourne planning individuel + solution équilibrée + podium d'activité commune.
+   - Interface web (http://localhost:8080) : création du groupe, matrice interactive (sliders 1→10), cartes animées, historique.
    - Commande : `./gradlew bootRun` (depuis le dossier) ou `../launch-demo.sh web`.
 
 > Dépendances : Java 17+, gl-solver.jar (copié dans `libs/` de chaque module), et cette branche locale `demo-app`.
