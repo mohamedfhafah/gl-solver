@@ -43,6 +43,7 @@ public class SolverBridge {
 
         var solver = new Solver();
         solver.alwaysReduceStrategy();
+        solver.getSolutions().setDisplaySolutions(false);
 
         Variable[][] matrix = new Variable[friendCount][activityCount];
         for (int f = 0; f < friendCount; f++) {
@@ -88,6 +89,7 @@ public class SolverBridge {
         List<PlannerResult.PlannerSolution> plannerSolutions = new ArrayList<>();
         int limit = Math.min(3, storedSolutions.size());
 
+        long nodes = solver.getNodesCounter();
         for (int idx = 0; idx < limit; idx++) {
             var solution = storedSolutions.get(idx);
             int cost = solution.stream()
@@ -113,9 +115,99 @@ public class SolverBridge {
                 }
             }
 
-            plannerSolutions.add(new PlannerResult.PlannerSolution(cost, assignment));
+            plannerSolutions.add(new PlannerResult.PlannerSolution(cost, nodes, assignment,
+                "Planning individuel (coût total)") );
         }
 
         return Optional.of(new PlannerResult(plannerSolutions));
+    }
+
+    public Optional<PlannerResult> solveGroup(List<String> friends,
+                                              List<String> activities,
+                                              int[][] costs) {
+        int activityCount = activities.size();
+        int friendCount = friends.size();
+        int[] aggregatedCosts = new int[activityCount];
+        for (int a = 0; a < activityCount; a++) {
+            int sum = 0;
+            for (int f = 0; f < friendCount; f++) {
+                sum += costs[f][a];
+            }
+            aggregatedCosts[a] = sum;
+        }
+
+        List<PlannerResult.PlannerSolution> solutions = new ArrayList<>();
+        List<Integer> excluded = new ArrayList<>();
+
+        for (int iteration = 0; iteration < Math.min(3, activityCount); iteration++) {
+            var solver = new Solver();
+            solver.alwaysReduceStrategy();
+            solver.getSolutions().setDisplaySolutions(false);
+
+            Variable[] chosen = new Variable[activityCount];
+            for (int a = 0; a < activityCount; a++) {
+                chosen[a] = solver.newVar("ACT" + a, 0, 1);
+            }
+
+            var sum = solver.newConstant(0);
+            for (Variable variable : chosen) {
+                sum = solver.expression(sum, "+", variable);
+            }
+            solver.addRelation(sum, "=", 1);
+
+            for (int banned : excluded) {
+                solver.addRelation(chosen[banned], "=", 0);
+            }
+
+            var costExpression = solver.newConstant(0);
+            for (int a = 0; a < activityCount; a++) {
+                costExpression = solver.expression(costExpression, "+", chosen[a], "*", aggregatedCosts[a]);
+            }
+            var costVar = solver.newVar("cout_group", 0, 10_000);
+            solver.addRelation(costExpression, "=", costVar);
+            solver.minimize(costVar);
+
+            long solved = solver.solve();
+            if (solved == 0) {
+                break;
+            }
+
+            var solution = solver.getSolutions().getStoredSolutions().get(0);
+            int chosenIndex = -1;
+            for (int a = 0; a < activityCount; a++) {
+                String varName = "ACT" + a;
+                int value = solution.stream()
+                    .filter(assignment -> assignment.variableName().equals(varName))
+                    .findFirst()
+                    .map(aVar -> aVar.value())
+                    .orElse(0);
+                if (value == 1) {
+                    chosenIndex = a;
+                    break;
+                }
+            }
+
+            if (chosenIndex < 0) {
+                break;
+            }
+
+            int cost = solution.stream()
+                .filter(assignment -> assignment.variableName().equals("cout_group"))
+                .findFirst()
+                .map(a -> a.value())
+                .orElse(0);
+
+            String activityName = activities.get(chosenIndex);
+            Map<String, String> assignment = new LinkedHashMap<>();
+            for (String friend : friends) {
+                assignment.put(friend, activityName);
+            }
+
+            solutions.add(new PlannerResult.PlannerSolution(cost, solver.getNodesCounter(), assignment,
+                "Sortie commune : " + activityName));
+            excluded.add(chosenIndex);
+        }
+
+        return solutions.isEmpty() ? Optional.empty() : Optional.of(new PlannerResult(solutions));
     }
 }

@@ -46,6 +46,23 @@
     -fx-text-fill: #4c4f69;
     -fx-font-size: 14px;
 }
+.mode-switch {
+    -fx-spacing: 8;
+}
+.mode-toggle {
+    -fx-background-radius: 999;
+    -fx-padding: 6 16 6 16;
+    -fx-background-color: rgba(99,102,241,0.12);
+    -fx-text-fill: #312e81;
+    -fx-font-weight: 600;
+}
+.mode-toggle:selected {
+    -fx-background-color: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -fx-text-fill: white;
+}
+.mode-toggle:hover {
+    -fx-background-color: rgba(99,102,241,0.25);
+}
 .legend {
     -fx-background-color: rgba(99,102,241,0.12);
     -fx-padding: 12;

@@ -4,6 +4,7 @@ import fr.univamu.solver.domain.Variable;
 import fr.univamu.solver.engine.Solver;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ public class SolverService {
         response.put("activities", activities);
         response.put("minCost", minCost.get().toMap());
         response.put("balanced", balanced.map(SolutionSummary::toMap).orElse(null));
+        response.put("group", Map.of("suggestions", buildGroupSuggestions(friends, activities, baseCosts)));
         return response;
     }
 
@@ -53,6 +55,7 @@ public class SolverService {
 
         var solver = new Solver();
         solver.alwaysReduceStrategy();
+        solver.getSolutions().setDisplaySolutions(false);
 
         Variable[][] matrix = new Variable[friendCount][activityCount];
         for (int f = 0; f < friendCount; f++) {
@@ -165,6 +168,43 @@ public class SolverService {
         return balanced;
     }
 
+    private List<Map<String, Object>> buildGroupSuggestions(List<String> friends,
+                                                            List<String> activities,
+                                                            int[][] costs) {
+        int friendCount = friends.size();
+        int activityCount = activities.size();
+
+        List<GroupScore> scores = new ArrayList<>();
+        for (int a = 0; a < activityCount; a++) {
+            int total = 0;
+            int worst = 0;
+            Map<String, Integer> details = new LinkedHashMap<>();
+            for (int f = 0; f < friendCount; f++) {
+                int value = costs[f][a];
+                total += value;
+                worst = Math.max(worst, value);
+                details.put(friends.get(f), value);
+            }
+            double average = friendCount == 0 ? 0 : (double) total / friendCount;
+            scores.add(new GroupScore(a, total, average, worst, details));
+        }
+
+        scores.sort(Comparator.comparingInt(GroupScore::total));
+        List<Map<String, Object>> result = new ArrayList<>();
+        int limit = Math.min(3, scores.size());
+        for (int i = 0; i < limit; i++) {
+            GroupScore score = scores.get(i);
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("activity", activities.get(score.index()));
+            payload.put("total", score.total());
+            payload.put("average", score.average());
+            payload.put("worst", score.worst());
+            payload.put("details", score.details());
+            result.add(payload);
+        }
+        return result;
+    }
+
     private record SolutionSummary(int cost, long nodes, Map<String, String> assignment, long solutions) {
         Map<String, Object> toMap() {
             return Map.of(
@@ -174,5 +214,8 @@ public class SolverService {
                 "solutions", solutions
             );
         }
+    }
+
+    private record GroupScore(int index, int total, double average, int worst, Map<String, Integer> details) {
     }
 }

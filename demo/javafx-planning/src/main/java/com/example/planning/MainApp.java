@@ -7,6 +7,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -14,6 +15,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.BorderPane;
@@ -21,9 +24,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.converter.IntegerStringConverter;
+import javafx.util.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class MainApp extends Application {
 
@@ -32,6 +37,8 @@ public class MainApp extends Application {
     private List<String> activities;
     private List<PlannerResult.PlannerSolution> currentSolutions = new ArrayList<>();
     private int currentIndex = 0;
+    private Mode currentMode = Mode.PERSONALIZED;
+    private Label subtitle;
 
     @Override
     public void start(Stage stage) {
@@ -45,8 +52,32 @@ public class MainApp extends Application {
         Label header = new Label("Planificateur intelligent de soirées");
         header.getStyleClass().add("title");
 
-        Label subtitle = new Label("Ajustez les préférences de chacun : plus le nombre est petit, plus l'ami aime l'activité (1 = coup de cœur, 10 = à éviter).\nCliquez ensuite sur 'Planifier la soirée' pour obtenir les meilleures combinaisons.");
+        subtitle = new Label();
         subtitle.getStyleClass().add("subtitle");
+        updateSubtitle();
+
+        ToggleButton personalBtn = new ToggleButton("Planning individuel");
+        ToggleButton groupBtn = new ToggleButton("Activité commune");
+        ToggleGroup modeGroup = new ToggleGroup();
+        personalBtn.setToggleGroup(modeGroup);
+        groupBtn.setToggleGroup(modeGroup);
+        personalBtn.setSelected(true);
+        personalBtn.getStyleClass().add("mode-toggle");
+        groupBtn.getStyleClass().add("mode-toggle");
+        HBox modeSwitch = new HBox(10, personalBtn, groupBtn);
+        modeSwitch.getStyleClass().add("mode-switch");
+
+        modeGroup.selectedToggleProperty().addListener((obs, old, selected) -> {
+            if (selected == null) {
+                personalBtn.setSelected(true);
+            }
+            if (modeGroup.getSelectedToggle() == groupBtn) {
+                currentMode = Mode.GROUP;
+            } else {
+                currentMode = Mode.PERSONALIZED;
+            }
+            updateSubtitle();
+        });
 
         TableView<PreferenceRow> table = buildTable();
         table.setPrefHeight(320);
@@ -79,7 +110,11 @@ public class MainApp extends Application {
                 }
             }
 
-            solverBridge.solve(friends, activities, costs).ifPresentOrElse(result -> {
+            Optional<PlannerResult> result = currentMode == Mode.PERSONALIZED
+                ? solverBridge.solve(friends, activities, costs)
+                : solverBridge.solveGroup(friends, activities, costs);
+
+            result.ifPresentOrElse(planner -> {
                 currentSolutions = result.solutions();
                 currentIndex = 0;
                 nextButton.setDisable(currentSolutions.size() <= 1);
@@ -108,7 +143,7 @@ public class MainApp extends Application {
             createLegendRow("10", "À éviter"));
         legend.getStyleClass().add("legend");
 
-        VBox leftCard = new VBox(18, header, subtitle, legend, table);
+        VBox leftCard = new VBox(18, header, modeSwitch, subtitle, legend, table);
         leftCard.getStyleClass().add("card");
 
         VBox controls = new VBox(12, buttons, statusLabel, output);
@@ -145,15 +180,18 @@ public class MainApp extends Application {
         PlannerResult.PlannerSolution solution = currentSolutions.get(currentIndex);
         StringBuilder builder = new StringBuilder();
         builder.append("Solution ").append(currentIndex + 1).append(" / ")
-            .append(currentSolutions.size()).append("  (coût = ")
-            .append(solution.cost()).append(")\n\n");
+            .append(currentSolutions.size()).append("\n")
+            .append(solution.description()).append("\n")
+            .append("Coût total : ").append(solution.cost())
+            .append(" — Nœuds explorés : ").append(solution.exploredNodes())
+            .append("\n\n");
         solution.assignment().forEach((friend, activity) ->
             builder.append("  • ").append(friend).append(" → ").append(activity).append("\n"));
 
         output.getItems().setAll(builder.toString());
-        statusLabel.setText("Solution affichée : " + (currentIndex + 1));
+        statusLabel.setText("Solution affichée : " + (currentIndex + 1) + " / " + currentSolutions.size());
         output.getSelectionModel().select(0);
-        javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(javafx.util.Duration.millis(350), output);
+        FadeTransition ft = new FadeTransition(Duration.millis(350), output);
         ft.setFromValue(0.0);
         ft.setToValue(1.0);
         ft.playFromStart();
@@ -214,5 +252,21 @@ public class MainApp extends Application {
             int index = activities.indexOf(activity);
             return values.get(index);
         }
+    }
+
+    private void updateSubtitle() {
+        if (subtitle == null) {
+            return;
+        }
+        if (currentMode == Mode.PERSONALIZED) {
+            subtitle.setText("Ajustez les préférences de chacun : 1 = coup de cœur, 10 = à éviter. \nCliquez sur 'Planifier la soirée' pour répartir les activités individuellement.");
+        } else {
+            subtitle.setText("Mode sortie commune : 1 = activité adorée par tous, 10 = activité à éviter. \nLe solver choisira l'activité unique minimisant la somme des préférences.");
+        }
+    }
+
+    private enum Mode {
+        PERSONALIZED,
+        GROUP
     }
 }

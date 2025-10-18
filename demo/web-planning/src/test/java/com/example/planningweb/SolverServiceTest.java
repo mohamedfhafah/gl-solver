@@ -23,5 +23,10 @@ public class SolverServiceTest {
         var minCost = (java.util.Map<String, Object>) response.get("minCost");
         assertNotNull(minCost);
         assertTrue(minCost.containsKey("assignment"));
+
+        @SuppressWarnings("unchecked")
+        var group = (java.util.Map<String, Object>) response.get("group");
+        assertNotNull(group);
+        assertTrue(group.containsKey("suggestions"));
     }
 }

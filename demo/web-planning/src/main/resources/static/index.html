@@ -19,11 +19,14 @@
         .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
         .card { border-radius: 14px; padding: 1.2rem; background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #fff; position: relative; overflow: hidden; }
         .card.secondary { background: linear-gradient(135deg, #059669, #10b981); }
+        .card.tertiary { background: linear-gradient(135deg, #f97316, #fb923c); }
         .card h2 { margin: 0 0 .5rem 0; font-size: 1.2rem; }
         .chip { background: rgba(255,255,255,0.2); display: inline-block; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; margin-right: .4rem; }
         .assignment { margin-top: .8rem; }
         .assignment div { margin: .25rem 0; display: flex; justify-content: space-between; }
         .assignment span { font-weight: 600; }
+        .alternatives { margin-top: 1rem; font-size: .85rem; opacity: .9; }
+        .alternatives .alt { margin-top: .2rem; }
         .history { list-style: none; padding: 0; margin: 0; }
         .history li { background: #fff; padding: 1rem; border-radius: 12px; margin-bottom: .8rem; box-shadow: 0 6px 12px rgba(15,23,42,0.08); }
         .meter { height: 8px; background: rgba(255,255,255,0.3); border-radius: 999px; margin-top: .5rem; overflow: hidden; }
@@ -90,15 +93,18 @@
             const resultDiv = document.getElementById('result');
             const min = data.minCost;
             const balanced = data.balanced;
+            const group = (data.group && data.group.suggestions) ? data.group.suggestions : [];
+            const groupCard = group.length ? renderGroupCard(group) : '';
             resultDiv.innerHTML = `
                 <div class="result-grid">
-                    ${renderCard('Objectif coût minimal', min, '#38bdf8')}
-                    ${balanced ? renderCard('Objectif équilibre', balanced, '#f97316') : ''}
+                    ${renderCard('Planning individuel', min, '#38bdf8', 'Répartition optimale pour chacun')} 
+                    ${balanced ? renderCard('Solution équilibrée', balanced, '#f97316', 'Réduit les écarts de satisfaction') : ''}
+                    ${groupCard}
                 </div>
             `;
         }
 
-        function renderCard(title, payload, accentColor) {
+        function renderCard(title, payload, accentColor, subtitle) {
             const assignmentHtml = Object.entries(payload.assignment)
                 .map(([friend, activity]) => `<div><span>${friend}</span><span>${activity}</span></div>`)
                 .join('');
@@ -108,6 +114,7 @@
                 <div class="card" style="background:${accentColor};">
                     <span class="chip">${payload.solutions} solutions</span>
                     <h2>${title}</h2>
+                    <p style="margin:0 0 6px 0;">${subtitle}</p>
                     <p style="margin:0;">Coût : <strong>${payload.cost}</strong></p>
                     <p style="margin:0;">Nœuds explorés : ${nodes}</p>
                     <div class="meter"><span style="width:${width}%"></span></div>
@@ -116,16 +123,43 @@
             `;
         }
 
+        function renderGroupCard(groupSuggestions) {
+            const best = groupSuggestions[0];
+            const width = Math.min(100, best.total / 5);
+            const alternatives = groupSuggestions.slice(1).map((suggestion, idx) =>
+                `<div class="alt">${idx + 2}. ${suggestion.activity} — score ${suggestion.total}</div>`
+            ).join('');
+            const details = Object.entries(best.details)
+                .map(([friend, score]) => `<div><span>${friend}</span><span>${score}</span></div>`)
+                .join('');
+            return `
+                <div class="card tertiary">
+                    <span class="chip">Activité commune</span>
+                    <h2>${best.activity}</h2>
+                    <p style="margin:0;">Score global : <strong>${best.total}</strong> (moyenne ${best.average.toFixed(2)})</p>
+                    <p style="margin:0;">Ami le moins satisfait : ${best.worst}</p>
+                    <div class="meter"><span style="width:${width}%"></span></div>
+                    <div class="assignment">${details}</div>
+                    ${alternatives ? `<div class="alternatives"><strong>Alternatives :</strong>${alternatives}</div>` : ''}
+                </div>
+            `;
+        }
+
         function addToHistory(data) {
             const timestamp = new Date().toLocaleTimeString();
-            history.unshift({ timestamp, minCost: data.minCost });
+            const summary = {
+                timestamp,
+                minCost: data.minCost,
+                group: data.group && data.group.suggestions ? data.group.suggestions[0] : null
+            };
+            history.unshift(summary);
             if (history.length > 5) history.pop();
 
             historyList.innerHTML = history
                 .map(entry => `
                     <li>
                         <strong>${entry.timestamp}</strong><br/>
-                        Coût minimal : ${entry.minCost.cost} – Nœuds : ${entry.minCost.nodes}
+                        Coût individuel : ${entry.minCost.cost} – Activité commune : ${entry.group ? entry.group.activity : 'n/a'}
                     </li>
                 `)
                 .join('');
