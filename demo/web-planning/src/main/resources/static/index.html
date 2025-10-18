@@ -2,54 +2,111 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <title>Planificateur de soirée – Démo Web</title>
+    <title>GL-Solver – Planificateur de soirée collaboratif</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
         :root {
-            color-scheme: light;
-            font-family: "Inter", "SF Pro Display", Arial, sans-serif;
+            font-family: 'Inter', sans-serif;
+            color: #0f172a;
             --primary: #6366f1;
             --primary-dark: #4f46e5;
-            --bg: #f1f5f9;
-            --card: #ffffff;
+            --surface: rgba(255,255,255,0.92);
+            --border: rgba(148,163,184,0.25);
+            --shadow: 0 32px 60px rgba(15,23,42,0.12);
         }
+        * { box-sizing: border-box; }
         body {
             margin: 0;
-            background: linear-gradient(135deg, #eef2ff, #f8fafc);
-            padding: 2.5rem;
+            background: radial-gradient(circle at top, #eef2ff, #f8fafc 55%, #e2e8f0);
             min-height: 100vh;
         }
-        h1 {
-            color: #1e293b;
-            margin-bottom: .25rem;
-            font-size: 2.4rem;
+        header {
+            padding: 3rem 4vw 2rem;
         }
-        p.lead {
+        header h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            color: #1e293b;
+        }
+        header p {
+            margin: .75rem 0 0;
             color: #475569;
-            margin-top: 0;
-            margin-bottom: 2rem;
+            max-width: 720px;
+        }
+        main {
+            padding: 0 4vw 4rem;
         }
         .layout {
             display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 2rem;
+            grid-template-columns: 420px 1fr;
+            gap: 2.5rem;
         }
-        .panel {
-            background: rgba(255,255,255,0.92);
+        .card {
+            background: var(--surface);
             border-radius: 28px;
-            box-shadow: 0 32px 60px rgba(15,23,42,0.12);
-            padding: 1.8rem;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+        .stepper {
             display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
-        .panel h2 {
-            margin: 0;
+        .stepper .bubble {
+            border-radius: 18px;
+            padding: .55rem 1.1rem;
+            background: rgba(99,102,241,0.12);
             color: #312e81;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .25s ease;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
         }
+        .stepper .bubble.active {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: #fff;
+            transform: translateY(-3px);
+        }
+        .step {
+            display: none;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        .step.active { display: flex; }
         .section-title {
             font-weight: 600;
-            color: #4c1d95;
-            margin-bottom: .5rem;
+            color: #4338ca;
+            letter-spacing: .02em;
+        }
+        .inline-form {
+            display: flex;
+            gap: .8rem;
+        }
+        .inline-form input {
+            flex: 1;
+            border-radius: 14px;
+            border: 1px solid rgba(148,163,184,0.6);
+            padding: .6rem .9rem;
+        }
+        .btn-primary, .btn-secondary {
+            border: none;
+            border-radius: 14px;
+            padding: .6rem 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .2s ease, filter .2s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: #fff;
+        }
+        .btn-primary:hover { filter: brightness(.95); transform: translateY(-1px); }
+        .btn-secondary {
+            background: rgba(99,102,241,0.12);
+            color: #312e81;
         }
         .chip-list {
             display: flex;
@@ -57,137 +114,78 @@
             gap: .6rem;
         }
         .chip {
-            background: rgba(99,102,241,0.12);
-            border-radius: 999px;
-            padding: .45rem .9rem;
             display: inline-flex;
             align-items: center;
-            gap: .4rem;
+            gap: .5rem;
+            background: rgba(99,102,241,0.12);
             color: #312e81;
-            font-weight: 600;
-            transition: transform .2s ease;
-        }
-        .chip:hover {
-            transform: translateY(-2px);
+            padding: .45rem .9rem;
+            border-radius: 999px;
+            font-weight: 500;
         }
         .chip button {
-            border: none;
             background: transparent;
+            border: none;
             cursor: pointer;
-            color: inherit;
             font-weight: 700;
+            color: inherit;
         }
-        .input-row {
-            display: flex;
-            gap: .8rem;
-        }
-        .input-row input {
-            flex: 1;
-            border-radius: 14px;
-            border: 1px solid rgba(148,163,184,0.6);
-            padding: .6rem .9rem;
-            font-size: 1rem;
-        }
-        .input-row button, .primary-btn {
-            background: linear-gradient(135deg, var(--primary), #8b5cf6);
-            border: none;
-            border-radius: 14px;
-            padding: .6rem 1.2rem;
-            color: #fff;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform .2s ease, filter .2s ease;
-        }
-        .input-row button:hover, .primary-btn:hover {
-            filter: brightness(0.95);
-            transform: translateY(-1px);
-        }
-        .secondary-btn {
-            background: rgba(99,102,241,0.12);
-            border: none;
-            color: #312e81;
-            border-radius: 14px;
-            padding: .6rem 1rem;
-            cursor: pointer;
-        }
-        table.rating {
+        table {
             width: 100%;
             border-collapse: collapse;
-            background: rgba(255,255,255,0.8);
-            border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 16px 40px rgba(15,23,42,0.08);
+            border-radius: 18px;
+            background: rgba(255,255,255,0.88);
+            box-shadow: 0 22px 35px rgba(15,23,42,0.08);
         }
-        table.rating th, table.rating td {
-            padding: .75rem;
+        th, td {
+            padding: .8rem;
             text-align: center;
-            border-bottom: 1px solid rgba(148,163,184,0.25);
+            border-bottom: 1px solid var(--border);
         }
-        table.rating th {
-            background: rgba(99,102,241,0.12);
-            color: #312e81;
-        }
-        table.rating td label {
-            display: flex;
-            flex-direction: column;
-            gap: .4rem;
-            align-items: center;
-        }
-        table.rating input[type=range] {
-            width: 120px;
-        }
-        .cta-area {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-        .result-grid {
+        th { background: rgba(99,102,241,0.14); color: #312e81; }
+        td label { display: flex; flex-direction: column; gap: .5rem; align-items: center; }
+        input[type=range] { width: 130px; accent-color: var(--primary); }
+        .step-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .status { color: #2563eb; font-weight: 500; }
+        .status.error { color: #b91c1c; }
+        .results-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 1.2rem;
+            gap: 1.5rem;
         }
-        .card {
-            border-radius: 18px;
-            padding: 1.4rem;
+        .result-card {
+            border-radius: 22px;
+            padding: 1.6rem;
             color: #fff;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 20px 45px rgba(15,23,42,0.15);
+            box-shadow: 0 24px 45px rgba(15,23,42,0.15);
+            animation: fadeIn .35s ease;
         }
-        .card.primary { background: linear-gradient(135deg, #2563eb, #38bdf8); }
-        .card.secondary { background: linear-gradient(135deg, #22c55e, #0ea5e9); }
-        .card.tertiary { background: linear-gradient(135deg, #f97316, #fb923c); }
-        .card h3 { margin: 0 0 .4rem 0; }
-        .card p { margin: .1rem 0; }
-        .chip-badge {
-            display: inline-flex;
-            align-items: center;
-            background: rgba(255,255,255,0.2);
-            border-radius: 999px;
-            padding: .25rem .7rem;
-            font-size: .75rem;
-            margin-bottom: .6rem;
-        }
-        .assignments { margin-top: .6rem; }
-        .assignments div { display: flex; justify-content: space-between; margin-top: .25rem; }
-        .meter { height: 8px; background: rgba(255,255,255,0.25); border-radius: 999px; margin-top: .6rem; }
+        .result-card.primary { background: linear-gradient(135deg, #2563eb, #38bdf8); }
+        .result-card.secondary { background: linear-gradient(135deg, #16a34a, #22d3ee); }
+        .result-card.tertiary { background: linear-gradient(135deg, #f97316, #fb923c); }
+        .badge { display: inline-flex; padding: .25rem .8rem; border-radius: 999px; background: rgba(255,255,255,0.25); font-size: .75rem; margin-bottom: .5rem; }
+        .result-details div { display: flex; justify-content: space-between; margin-top: .3rem; }
+        .meter { height: 8px; background: rgba(255,255,255,0.25); border-radius: 999px; margin-top: .7rem; }
         .meter span { display: block; height: 100%; background: rgba(255,255,255,0.9); }
-        .alternatives { margin-top: .8rem; font-size: .85rem; opacity: .92; }
-        .history { display: flex; flex-direction: column; gap: .8rem; }
-        .history-entry {
+        .history-list { display: grid; gap: 1rem; }
+        .history-item {
             background: rgba(255,255,255,0.88);
             border-radius: 16px;
-            padding: 1rem;
-            box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+            padding: 1.1rem;
+            box-shadow: 0 14px 28px rgba(15,23,42,0.08);
+            animation: fadeIn .35s ease;
         }
-        .history-entry h4 { margin: 0 0 .4rem 0; }
-        .history-entry p { margin: .2rem 0; color: #475569; }
-        .step-title { font-weight: 600; color: #312e81; margin-bottom: .4rem; }
-        .divider { height: 1px; background: rgba(148,163,184,0.25); margin: .6rem 0; }
-        .error { color: #b91c1c; font-weight: 600; }
-        .fade-in { animation: fadeIn .35s ease forwards; }
+        footer {
+            text-align: center;
+            padding: 2rem 4vw 3rem;
+            color: #475569;
+        }
+        footer a { color: var(--primary-dark); text-decoration: none; font-weight: 600; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
         @media(max-width: 1024px) {
@@ -196,279 +194,385 @@
     </style>
 </head>
 <body>
+<header>
     <h1>Planificateur de soirée collaboratif</h1>
-    <p class="lead">Définissez votre groupe, notez les activités de 1 (adoré) à 10 (à éviter) et laissez GL‑Solver proposer les 3 meilleurs plans, y compris une sortie commune.</p>
+    <p>Construisez votre groupe d'amis, attribuez une note à chaque activité (1 = coup de cœur, 10 = à éviter) et laissez GL-Solver proposer les 3 meilleurs plans possibles, dont une sortie commune.</p>
+</header>
 
+<main>
     <div class="layout">
-        <div class="panel" id="builder">
-            <div>
-                <div class="section-title">Étape 1 — Amis</div>
-                <div class="input-row">
+        <section class="card" id="builder">
+            <div class="stepper">
+                <div class="bubble active" data-step="0">1. Amis</div>
+                <div class="bubble" data-step="1">2. Activités</div>
+                <div class="bubble" data-step="2">3. Préférences</div>
+                <div class="bubble" data-step="3">4. Résultats</div>
+            </div>
+
+            <div class="step active" id="step-0">
+                <div class="section-title">Étape 1 — Ajoutez vos amis</div>
+                <div class="inline-form">
                     <input id="friendInput" placeholder="Nom de l'ami" />
-                    <button id="addFriend">Ajouter</button>
-                    <button class="secondary-btn" id="loadExample">Charger exemple</button>
+                    <button class="btn-primary" id="addFriend">Ajouter</button>
+                    <button class="btn-secondary" id="loadExample">Charger l'exemple</button>
                 </div>
                 <div id="friendsChips" class="chip-list"></div>
+                <div class="step-footer">
+                    <span></span>
+                    <button class="btn-primary" id="nextStep">Suivant</button>
+                </div>
             </div>
 
-            <div>
-                <div class="section-title">Étape 2 — Activités</div>
-                <div class="input-row">
+            <div class="step" id="step-1">
+                <div class="section-title">Étape 2 — Ajoutez des activités</div>
+                <div class="inline-form">
                     <input id="activityInput" placeholder="Nom de l'activité" />
-                    <button id="addActivity">Ajouter</button>
+                    <button class="btn-primary" id="addActivity">Ajouter</button>
                 </div>
                 <div id="activitiesChips" class="chip-list"></div>
+                <div class="step-footer">
+                    <button class="btn-secondary" id="prevStep">Précédent</button>
+                    <button class="btn-primary" id="nextStep">Suivant</button>
+                </div>
             </div>
 
-            <div>
-                <div class="section-title">Étape 3 — Préférences (1 = coup de cœur, 10 = à éviter)</div>
+            <div class="step" id="step-2">
+                <div class="section-title">Étape 3 — Notez chaque activité (1 = adoré, 10 = à éviter)</div>
                 <div id="ratingContainer"></div>
-            </div>
-
-            <div class="cta-area">
-                <button class="primary-btn" id="computeBtn">Calculer les plans</button>
-                <span id="builderStatus" class="status">Complétez les étapes pour lancer le solver.</span>
-            </div>
-        </div>
-
-        <div class="panel" id="resultsPanel">
-            <h2>Résultats</h2>
-            <div id="result" class="fade-in"></div>
-            <div class="divider"></div>
-            <h2>Historique</h2>
-            <div id="history" class="history"></div>
-        </div>
-    </div>
-
-    <script>
-        const defaultDataset = {
-            friends: ["Alice", "Bruno", "Chloé", "David"],
-            activities: ["Cinéma", "Escape Game", "Restaurant", "Karaoké"],
-            preferences: {
-                "Alice": {"Cinéma": 1, "Escape Game": 3, "Restaurant": 4, "Karaoké": 6},
-                "Bruno": {"Cinéma": 4, "Escape Game": 1, "Restaurant": 5, "Karaoké": 3},
-                "Chloé": {"Cinéma": 6, "Escape Game": 2, "Restaurant": 1, "Karaoké": 4},
-                "David": {"Cinéma": 3, "Escape Game": 4, "Restaurant": 2, "Karaoké": 1}
-            }
-        };
-
-        let friends = [];
-        let activities = [];
-        let preferences = {};
-        const history = [];
-
-        const friendsChips = document.getElementById('friendsChips');
-        const activitiesChips = document.getElementById('activitiesChips');
-        const ratingContainer = document.getElementById('ratingContainer');
-        const resultDiv = document.getElementById('result');
-        const historyList = document.getElementById('history');
-        const statusLabel = document.getElementById('builderStatus');
-
-        document.getElementById('addFriend').addEventListener('click', () => {
-            const value = document.getElementById('friendInput').value.trim();
-            if (!value || friends.includes(value)) return;
-            friends.push(value);
-            document.getElementById('friendInput').value = '';
-            renderFriends();
-            ensurePreferenceEntries();
-            renderMatrix();
-        });
-
-        document.getElementById('addActivity').addEventListener('click', () => {
-            const value = document.getElementById('activityInput').value.trim();
-            if (!value || activities.includes(value)) return;
-            activities.push(value);
-            document.getElementById('activityInput').value = '';
-            renderActivities();
-            ensurePreferenceEntries();
-            renderMatrix();
-        });
-
-        document.getElementById('loadExample').addEventListener('click', () => {
-            friends = [...defaultDataset.friends];
-            activities = [...defaultDataset.activities];
-            preferences = JSON.parse(JSON.stringify(defaultDataset.preferences));
-            renderFriends();
-            renderActivities();
-            renderMatrix();
-            statusLabel.textContent = "Exemple chargé. Ajustez les valeurs puis calculez.";
-        });
-
-        document.getElementById('computeBtn').addEventListener('click', async () => {
-            if (friends.length === 0 || activities.length === 0) {
-                statusLabel.textContent = "Ajoutez au moins un ami et une activité.";
-                statusLabel.classList.add('error');
-                return;
-            }
-            statusLabel.textContent = "Calcul en cours…";
-            statusLabel.classList.remove('error');
-            try {
-                const payload = { friends, activities, preferences };
-                const response = await fetch('/planifier', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await response.json();
-                if (data.status === 'ok') {
-                    displayResults(data);
-                    addToHistory(data);
-                    statusLabel.textContent = "Plan(s) calculé(s).";
-                } else if (data.status === 'no_solution') {
-                    resultDiv.innerHTML = '<p class="error">Aucune solution trouvée</p>';
-                    statusLabel.textContent = "Aucune solution trouvée.";
-                } else {
-                    resultDiv.innerHTML = `<p class="error">${data.message || 'Erreur inattendue'}</p>`;
-                    statusLabel.textContent = "Erreur lors du calcul.";
-                    statusLabel.classList.add('error');
-                }
-            } catch (error) {
-                resultDiv.innerHTML = `<p class="error">Erreur : ${error}</p>`;
-                statusLabel.textContent = "Erreur lors du calcul.";
-                statusLabel.classList.add('error');
-            }
-        });
-
-        function renderFriends() {
-            friendsChips.innerHTML = friends.map(friend =>
-                `<span class="chip">${friend}<button onclick="removeFriend('${friend}')">×</button></span>`
-            ).join('');
-        }
-
-        function renderActivities() {
-            activitiesChips.innerHTML = activities.map(activity =>
-                `<span class="chip">${activity}<button onclick="removeActivity('${activity}')">×</button></span>`
-            ).join('');
-        }
-
-        window.removeFriend = (friend) => {
-            friends = friends.filter(f => f !== friend);
-            delete preferences[friend];
-            renderFriends();
-            renderMatrix();
-        };
-
-        window.removeActivity = (activity) => {
-            activities = activities.filter(a => a !== activity);
-            for (const friend in preferences) {
-                delete preferences[friend][activity];
-            }
-            renderActivities();
-            renderMatrix();
-        };
-
-        function ensurePreferenceEntries() {
-            friends.forEach(friend => {
-                preferences[friend] = preferences[friend] || {};
-                activities.forEach(activity => {
-                    if (preferences[friend][activity] === undefined) {
-                        preferences[friend][activity] = 5;
-                    }
-                });
-            });
-        }
-
-        function renderMatrix() {
-            if (friends.length === 0 || activities.length === 0) {
-                ratingContainer.innerHTML = '<p class="error">Ajoutez amis et activités pour saisir les préférences.</p>';
-                return;
-            }
-            let html = '<table class="rating fade-in"><thead><tr><th>Ami</th>' +
-                activities.map(activity => `<th>${activity}</th>`).join('') + '</tr></thead><tbody>';
-            friends.forEach(friend => {
-                html += `<tr><td>${friend}</td>`;
-                activities.forEach(activity => {
-                    const value = preferences[friend][activity] ?? 5;
-                    html += `<td><label>${value}<input type="range" min="1" max="10" value="${value}" oninput="updatePreference('${friend}','${activity}',this.value)"/></label></td>`;
-                });
-                html += '</tr>';
-            });
-            html += '</tbody></table>';
-            ratingContainer.innerHTML = html;
-        }
-
-        window.updatePreference = (friend, activity, value) => {
-            preferences[friend][activity] = parseInt(value, 10);
-            renderMatrix();
-        };
-
-        function displayResults(data) {
-            const min = data.minCost;
-            const balanced = data.balanced;
-            const group = (data.group && data.group.suggestions) ? data.group.suggestions : [];
-            const groupCard = group.length ? renderGroupCard(group) : '';
-            resultDiv.innerHTML = `
-                <div class="result-grid fade-in">
-                    ${renderCard('Planning individuel', min, '#2563eb', 'Répartition optimale pour chacun')} 
-                    ${balanced ? renderCard('Solution équilibrée', balanced, '#0ea5e9', 'Réduit les écarts de satisfaction') : ''}
-                    ${groupCard}
-                </div>
-            `;
-        }
-
-        function renderCard(title, payload, accentColor, subtitle) {
-            const assignmentHtml = Object.entries(payload.assignment)
-                .map(([friend, activity]) => `<div><span>${friend}</span><span>${activity}</span></div>`)
-                .join('');
-            const nodes = payload.nodes;
-            const width = Math.min(100, nodes / 50);
-            return `
-                <div class="card primary" style="background:${accentColor};">
-                    <span class="chip-badge">${payload.solutions} solutions</span>
-                    <h3>${title}</h3>
-                    <p>${subtitle}</p>
-                    <p>Coût : <strong>${payload.cost}</strong></p>
-                    <p>Nœuds explorés : ${nodes}</p>
-                    <div class="meter"><span style="width:${width}%"></span></div>
-                    <div class="assignments">${assignmentHtml}</div>
-                </div>
-            `;
-        }
-
-        function renderGroupCard(groupSuggestions) {
-            const best = groupSuggestions[0];
-            const width = Math.min(100, best.total / 5);
-            const alternatives = groupSuggestions.slice(1).map((suggestion, idx) =>
-                `<div class="alt">${idx + 2}. ${suggestion.activity} — score ${suggestion.total}</div>`
-            ).join('');
-            const details = Object.entries(best.details)
-                .map(([friend, score]) => `<div><span>${friend}</span><span>${score}</span></div>`)
-                .join('');
-            return `
-                <div class="card tertiary">
-                    <span class="chip-badge">Sortie commune</span>
-                    <h3>${best.activity}</h3>
-                    <p>Score global : <strong>${best.total}</strong> (moyenne ${best.average.toFixed(2)}, pire note ${best.worst})</p>
-                    <div class="meter"><span style="width:${width}%"></span></div>
-                    <div class="assignments">${details}</div>
-                    ${alternatives ? `<div class="alternatives"><strong>Alternatives :</strong>${alternatives}</div>` : ''}
-                </div>
-            `;
-        }
-
-        function addToHistory(data) {
-            const timestamp = new Date().toLocaleTimeString();
-            const summary = {
-                timestamp,
-                minCost: data.minCost,
-                group: data.group && data.group.suggestions ? data.group.suggestions[0] : null
-            };
-            history.unshift(summary);
-            if (history.length > 5) history.pop();
-
-            historyList.innerHTML = history
-                .map(entry => `
-                    <div class="history-entry fade-in">
-                        <h4>${entry.timestamp}</h4>
-                        <p>Coût individuel : ${entry.minCost.cost}</p>
-                        <p>Activité commune : ${entry.group ? entry.group.activity : 'n/a'}</p>
+                <div class="step-footer">
+                    <button class="btn-secondary" id="prevStep">Précédent</button>
+                    <div style="display:flex; gap:1rem; align-items:center;">
+                        <span id="builderStatus" class="status">Complétez les notes avant de continuer.</span>
+                        <button class="btn-primary" id="computeBtn">Calculer les plans</button>
                     </div>
-                `)
-                .join('');
-        }
+                </div>
+            </div>
 
-        // Initial render
+            <div class="step" id="step-3">
+                <div class="section-title">Étape 4 — Résultats</div>
+                <p style="margin:0; color:#475569;">Analysez les cartes ci-dessous, comparez les scénarios et consultez l'historique. Vous pouvez revenir en arrière pour modifier les préférences.</p>
+                <div class="step-footer">
+                    <button class="btn-secondary" id="prevStep">Précédent</button>
+                    <button class="btn-primary" id="resetWizard">Recommencer</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="card" id="resultsPanel">
+            <h2 style="margin-top:0;">Résultats</h2>
+            <div id="result" class="results-grid"></div>
+            <div style="height:1px;background:var(--border);margin:1.5rem 0;"></div>
+            <h2>Historique</h2>
+            <div id="history" class="history-list"></div>
+        </section>
+    </div>
+</main>
+
+<footer>
+    <p>Propulsé par GL-Solver — <a href="https://git">Documentation</a> · <a href="mailto:contact@solver.local">Contact</a></p>
+</footer>
+
+<script>
+(function() {
+    const state = {
+        step: 0,
+        friends: [],
+        activities: [],
+        preferences: {},
+        history: JSON.parse(localStorage.getItem('planning-history') || '[]')
+    };
+
+    const bubbles = Array.from(document.querySelectorAll('.bubble'));
+    const steps = Array.from(document.querySelectorAll('.step'));
+    const actions = {
+        friendInput: document.getElementById('friendInput'),
+        addFriend: document.getElementById('addFriend'),
+        loadExample: document.getElementById('loadExample'),
+        friendsChips: document.getElementById('friendsChips'),
+        activityInput: document.getElementById('activityInput'),
+        addActivity: document.getElementById('addActivity'),
+        activitiesChips: document.getElementById('activitiesChips'),
+        ratingContainer: document.getElementById('ratingContainer'),
+        builderStatus: document.getElementById('builderStatus'),
+        computeBtn: document.getElementById('computeBtn'),
+        result: document.getElementById('result'),
+        history: document.getElementById('history')
+    };
+
+    document.getElementById('nextStep').addEventListener('click', () => goToStep(state.step + 1));
+    document.querySelectorAll('#prevStep').forEach(btn => btn.addEventListener('click', () => goToStep(state.step - 1)));
+    document.getElementById('resetWizard').addEventListener('click', () => {
+        state.step = 0;
+        state.friends = [];
+        state.activities = [];
+        state.preferences = {};
+        renderFriends();
+        renderActivities();
         renderMatrix();
-    </script>
+        renderResults();
+        goToStep(0);
+    });
+
+    bubbles.forEach(bubble => bubble.addEventListener('click', () => {
+        const idx = Number(bubble.dataset.step);
+        if (idx <= state.step) goToStep(idx);
+    }));
+
+    actions.addFriend.addEventListener('click', () => {
+        const name = actions.friendInput.value.trim();
+        if (!name || state.friends.includes(name)) return;
+        state.friends.push(name);
+        state.preferences[name] = state.preferences[name] || {};
+        actions.friendInput.value = '';
+        renderFriends();
+    });
+
+    actions.loadExample.addEventListener('click', () => {
+        state.friends = [...defaultDataset.friends];
+        state.activities = [...defaultDataset.activities];
+        state.preferences = JSON.parse(JSON.stringify(defaultDataset.preferences));
+        renderFriends();
+        renderActivities();
+        renderMatrix();
+        goToStep(2);
+        actions.builderStatus.textContent = "Ajustez les valeurs puis calculez.";
+        actions.builderStatus.classList.remove('error');
+    });
+
+    actions.addActivity.addEventListener('click', () => {
+        const label = actions.activityInput.value.trim();
+        if (!label || state.activities.includes(label)) return;
+        state.activities.push(label);
+        for (const friend of state.friends) {
+            state.preferences[friend] = state.preferences[friend] || {};
+            state.preferences[friend][label] = state.preferences[friend][label] ?? 5;
+        }
+        actions.activityInput.value = '';
+        renderActivities();
+        renderMatrix();
+    });
+
+    actions.computeBtn.addEventListener('click', async () => {
+        if (!validateBeforeCompute()) return;
+        actions.builderStatus.textContent = "Calcul en cours…";
+        actions.builderStatus.classList.remove('error');
+        try {
+            const payload = {
+                friends: state.friends,
+                activities: state.activities,
+                preferences: state.preferences
+            };
+            const response = await fetch('/planifier', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (data.status === 'ok') {
+                renderResults(data);
+                storeHistory({ payload, data });
+                goToStep(3);
+                actions.builderStatus.textContent = "Plan(s) calculé(s).";
+            } else if (data.status === 'no_solution') {
+                actions.builderStatus.textContent = "Aucune solution trouvée.";
+                actions.builderStatus.classList.add('error');
+            } else {
+                throw new Error(data.message || 'Erreur inattendue');
+            }
+        } catch (err) {
+            actions.builderStatus.textContent = `Erreur : ${err}`;
+            actions.builderStatus.classList.add('error');
+        }
+    });
+
+    function goToStep(idx) {
+        if (idx < 0 || idx > 3) return;
+        state.step = idx;
+        steps.forEach((stepEl, i) => stepEl.classList.toggle('active', i === idx));
+        bubbles.forEach((bubble, i) => bubble.classList.toggle('active', i === idx));
+        if (idx === 2) renderMatrix();
+        if (idx === 3) renderResults();
+    }
+
+    function renderFriends() {
+        actions.friendsChips.innerHTML = state.friends.map(friend =>
+            `<span class="chip">${friend}<button onclick="removeFriend('${friend}')">×</button></span>`
+        ).join('');
+    }
+
+    window.removeFriend = (friend) => {
+        state.friends = state.friends.filter(f => f !== friend);
+        delete state.preferences[friend];
+        renderFriends();
+        renderMatrix();
+    };
+
+    function renderActivities() {
+        actions.activitiesChips.innerHTML = state.activities.map(activity =>
+            `<span class="chip">${activity}<button onclick="removeActivity('${activity}')">×</button></span>`
+        ).join('');
+    }
+
+    window.removeActivity = (activity) => {
+        state.activities = state.activities.filter(a => a !== activity);
+        for (const friend of state.friends) {
+            if (state.preferences[friend]) delete state.preferences[friend][activity];
+        }
+        renderActivities();
+        renderMatrix();
+    };
+
+    function renderMatrix() {
+        if (state.friends.length === 0 || state.activities.length === 0) {
+            actions.ratingContainer.innerHTML = '<p class="status error">Ajoutez amis et activités pour noter les préférences.</p>';
+            return;
+        }
+        ensurePreferences();
+        let html = '<table class="fade-in"><thead><tr><th>Ami</th>' +
+            state.activities.map(activity => `<th>${activity}</th>`).join('') + '</tr></thead><tbody>';
+        for (const friend of state.friends) {
+            html += `<tr><td>${friend}</td>`;
+            for (const activity of state.activities) {
+                const value = state.preferences[friend][activity] ?? 5;
+                html += `<td><label>${value}<input type="range" min="1" max="10" value="${value}" onchange="updatePreference('${friend}','${activity}',this.value)" /></label></td>`;
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table>';
+        actions.ratingContainer.innerHTML = html;
+    }
+
+    window.updatePreference = (friend, activity, value) => {
+        state.preferences[friend][activity] = parseInt(value, 10);
+        renderMatrix();
+    };
+
+    function ensurePreferences() {
+        for (const friend of state.friends) {
+            state.preferences[friend] = state.preferences[friend] || {};
+            for (const activity of state.activities) {
+                state.preferences[friend][activity] = state.preferences[friend][activity] ?? 5;
+            }
+        }
+    }
+
+    function validateBeforeCompute() {
+        if (state.friends.length === 0 || state.activities.length === 0) {
+            actions.builderStatus.textContent = "Ajoutez au moins un ami et une activité.";
+            actions.builderStatus.classList.add('error');
+            return false;
+        }
+        return true;
+    }
+
+    function renderResults(data) {
+        if (!data) {
+            actions.result.innerHTML = '';
+            renderHistory();
+            return;
+        }
+        const cards = [];
+        if (data.minCost) {
+            cards.push(renderPlanCard('Planning individuel', data.minCost, 'Répartition optimale pour chacun', 'primary'));
+        }
+        if (data.balanced) {
+            cards.push(renderPlanCard('Solution équilibrée', data.balanced, 'Réduit les écarts de satisfaction', 'secondary'));
+        }
+        if (data.group && data.group.suggestions) {
+            cards.push(renderGroupCard(data.group.suggestions));
+        }
+        actions.result.innerHTML = cards.join('');
+        renderHistory();
+    }
+
+    function renderPlanCard(title, payload, subtitle, tone) {
+        const width = Math.min(100, (payload.nodes || 0) / 50);
+        const assignment = Object.entries(payload.assignment || {})
+            .map(([friend, activity]) => `<div><span>${friend}</span><span>${activity}</span></div>`)
+            .join('');
+        return `
+            <article class="result-card ${tone}">
+                <span class="badge">${payload.solutions || 1} solutions</span>
+                <h3>${title}</h3>
+                <p>${subtitle}</p>
+                <div class="result-details">
+                    <div><span>Coût total</span><span>${payload.cost}</span></div>
+                    <div><span>Nœuds explorés</span><span>${payload.nodes}</span></div>
+                </div>
+                <div class="meter"><span style="width:${width}%"></span></div>
+                <div class="result-details" style="margin-top:.7rem;">${assignment || '<div>Affectation non disponible</div>'}</div>
+            </article>
+        `;
+    }
+
+    function renderGroupCard(suggestions) {
+        const best = suggestions[0];
+        const width = Math.min(100, best.total / 5);
+        const details = Object.entries(best.details)
+            .map(([friend, score]) => `<div><span>${friend}</span><span>${score}</span></div>`)
+            .join('');
+        const alternatives = suggestions.slice(1).map((item, idx) =>
+            `<div>${idx + 2}. ${item.activity} — score ${item.total}</div>`
+        ).join('');
+        return `
+            <article class="result-card tertiary">
+                <span class="badge">Sortie commune</span>
+                <h3>${best.activity}</h3>
+                <p>Score global : <strong>${best.total}</strong> (moyenne ${Number(best.average).toFixed(2)}, pire note ${best.worst})</p>
+                <div class="meter"><span style="width:${width}%"></span></div>
+                <div class="result-details" style="margin-top:.7rem;">${details}</div>
+                ${alternatives ? `<div class="alternatives"><strong>Alternatives :</strong><br>${alternatives}</div>` : ''}
+            </article>
+        `;
+    }
+
+    function storeHistory(entry) {
+        state.history.unshift({
+            timestamp: new Date().toLocaleString(),
+            payload: entry.payload,
+            data: entry.data
+        });
+        if (state.history.length > 6) state.history.pop();
+        localStorage.setItem('planning-history', JSON.stringify(state.history));
+    }
+
+    function renderHistory() {
+        actions.history.innerHTML = state.history.map((entry, idx) => {
+            const friends = entry.payload.friends.join(', ');
+            const activities = entry.payload.activities.join(', ');
+            const bestGroup = entry.data.group && entry.data.group.suggestions ? entry.data.group.suggestions[0] : null;
+            return `
+                <div class="history-item">
+                    <h3>Simulation ${idx + 1} · ${entry.timestamp}</h3>
+                    <p><strong>Amis :</strong> ${friends || 'n/a'}</p>
+                    <p><strong>Activités :</strong> ${activities || 'n/a'}</p>
+                    <p><strong>Coût individuel :</strong> ${entry.data.minCost ? entry.data.minCost.cost : 'n/a'} · <strong>Sortie commune :</strong> ${bestGroup ? bestGroup.activity : 'n/a'}</p>
+                    <button class="btn-secondary" onclick='reloadHistory(${idx})'>Recharger</button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    window.reloadHistory = (index) => {
+        const item = state.history[index];
+        if (!item) return;
+        state.friends = [...item.payload.friends];
+        state.activities = [...item.payload.activities];
+        state.preferences = JSON.parse(JSON.stringify(item.payload.preferences || {}));
+        renderFriends();
+        renderActivities();
+        renderMatrix();
+        renderResults(item.data);
+        goToStep(3);
+    };
+
+    // init
+    renderFriends();
+    renderActivities();
+    renderMatrix();
+    renderResults();
+    renderHistory();
+})();
+</script>
 </body>
 </html>
