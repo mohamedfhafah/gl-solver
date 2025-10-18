@@ -110,12 +110,12 @@ public class MainApp extends Application {
                 }
             }
 
-            Optional<PlannerResult> result = currentMode == Mode.PERSONALIZED
+            Optional<PlannerResult> resultOpt = currentMode == Mode.PERSONALIZED
                 ? solverBridge.solve(friends, activities, costs)
                 : solverBridge.solveGroup(friends, activities, costs);
 
-            result.ifPresentOrElse(planner -> {
-                currentSolutions = result.solutions();
+            resultOpt.ifPresentOrElse(planner -> {
+                currentSolutions = planner.solutions();
                 currentIndex = 0;
                 nextButton.setDisable(currentSolutions.size() <= 1);
                 displaySolution(output, statusLabel);
