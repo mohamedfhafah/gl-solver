@@ -18,9 +18,26 @@ public class SolverBridge {
 
     private final PreferenceDataset dataset = PreferencesLoader.loadDefaultDataset();
 
-    public Optional<PlannerResult> solveDemoProblem() {
-        var activities = dataset.activities();
-        var friends = dataset.friends();
+    public PreferenceDataset getDataset() {
+        return dataset;
+    }
+
+    public Optional<PlannerResult> solveDefault() {
+        var friendNames = dataset.friends().stream().map(PreferenceDataset.PreferenceEntry::name).toList();
+        int[][] costs = new int[friendNames.size()][dataset.activities().size()];
+        for (int f = 0; f < friendNames.size(); f++) {
+            var entry = dataset.friends().get(f);
+            for (int a = 0; a < dataset.activities().size(); a++) {
+                String activity = dataset.activities().get(a);
+                costs[f][a] = entry.preferences().getOrDefault(activity, 5);
+            }
+        }
+        return solve(friendNames, dataset.activities(), costs);
+    }
+
+    public Optional<PlannerResult> solve(List<String> friends,
+                                         List<String> activities,
+                                         int[][] costs) {
         int friendCount = friends.size();
         int activityCount = activities.size();
 
@@ -55,9 +72,7 @@ public class SolverBridge {
         var costExpression = zero;
         for (int f = 0; f < friendCount; f++) {
             for (int a = 0; a < activityCount; a++) {
-                String activityName = activities.get(a);
-                int cost = friends.get(f).preferences().getOrDefault(activityName, 5);
-                costExpression = solver.expression(costExpression, "+", matrix[f][a], "*", cost);
+                costExpression = solver.expression(costExpression, "+", matrix[f][a], "*", costs[f][a]);
             }
         }
         var costVar = solver.newVar("cout", 0, 1000);
@@ -90,7 +105,7 @@ public class SolverBridge {
                         .findFirst()
                         .ifPresent(assignmentVar -> {
                             if (assignmentVar.value() == 1) {
-                                assignment.put(friends.get(f).name(), activities.get(a));
+                                assignment.put(friends.get(f), activities.get(a));
                             }
                         });
                 }
