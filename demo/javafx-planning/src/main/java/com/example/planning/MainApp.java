@@ -5,7 +5,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -18,10 +18,8 @@ public class MainApp extends Application {
     public void start(Stage stage) {
         stage.setTitle("Planning de soirée – Prototype");
 
-        TextArea output = new TextArea();
-        output.setEditable(false);
-        output.setPrefRowCount(10);
-        output.setText("Cliquez sur 'Planifier la soirée' pour lancer le solver.");
+        ListView<String> output = new ListView<>();
+        output.setPlaceholder(new Label("Aucune solution pour le moment"));
 
         Button solveButton = new Button("Planifier la soirée");
         Label statusLabel = new Label("En attente...");
@@ -29,11 +27,21 @@ public class MainApp extends Application {
         solveButton.setOnAction(event -> {
             statusLabel.setText("Calcul en cours...");
             solverBridge.solveDemoProblem().ifPresentOrElse(result -> {
-                output.setText(result);
-                statusLabel.setText("Solution optimale trouvée");
+                output.getItems().clear();
+                int index = 1;
+                for (PlannerResult.PlannerSolution solution : result.solutions()) {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append("Solution ").append(index++).append(" (coût = ")
+                        .append(solution.cost()).append(")");
+                    builder.append("\n");
+                    solution.assignment().forEach((friend, activity) ->
+                        builder.append("  • ").append(friend).append(" → ").append(activity).append("\n"));
+                    output.getItems().add(builder.toString());
+                }
+                statusLabel.setText("Solutions optimales affichées");
             }, () -> {
-                output.setText("Aucune solution trouvée");
-                statusLabel.setText("Échec");
+                output.getItems().clear();
+                statusLabel.setText("Aucune solution trouvée");
             });
         });
 
@@ -41,11 +49,11 @@ public class MainApp extends Application {
         controls.setPadding(new Insets(16));
 
         BorderPane root = new BorderPane();
-        root.setCenter(new Label("Prototype : les préférences sont codées en dur dans SolverBridge."));
+        root.setCenter(new Label("Prototype : les préférences proviennent de preferences.json"));
         root.setBottom(controls);
         root.setPadding(new Insets(16));
 
-        stage.setScene(new Scene(root, 640, 360));
+        stage.setScene(new Scene(root, 640, 420));
         stage.show();
     }
 

@@ -3,7 +3,9 @@ package com.example.planning;
 import fr.univamu.solver.domain.Variable;
 import fr.univamu.solver.engine.Solver;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -16,7 +18,7 @@ public class SolverBridge {
 
     private final PreferenceDataset dataset = PreferencesLoader.loadDefaultDataset();
 
-    public Optional<String> solveDemoProblem() {
+    public Optional<PlannerResult> solveDemoProblem() {
         var activities = dataset.activities();
         var friends = dataset.friends();
         int friendCount = friends.size();
@@ -67,14 +69,23 @@ public class SolverBridge {
             return Optional.empty();
         }
 
-        Map<String, String> assignment = new LinkedHashMap<>();
         var storedSolutions = solver.getSolutions().getStoredSolutions();
-        if (!storedSolutions.isEmpty()) {
-            var best = storedSolutions.get(0);
+        List<PlannerResult.PlannerSolution> plannerSolutions = new ArrayList<>();
+        int limit = Math.min(3, storedSolutions.size());
+
+        for (int idx = 0; idx < limit; idx++) {
+            var solution = storedSolutions.get(idx);
+            int cost = solution.stream()
+                .filter(assignment -> assignment.variableName().equals("cout"))
+                .findFirst()
+                .map(a -> a.value())
+                .orElse(0);
+
+            Map<String, String> assignment = new LinkedHashMap<>();
             for (int f = 0; f < friendCount; f++) {
                 for (int a = 0; a < activityCount; a++) {
                     String varName = "F" + f + "A" + a;
-                    best.stream()
+                    solution.stream()
                         .filter(assignmentVar -> assignmentVar.variableName().equals(varName))
                         .findFirst()
                         .ifPresent(assignmentVar -> {
@@ -84,11 +95,10 @@ public class SolverBridge {
                         });
                 }
             }
+
+            plannerSolutions.add(new PlannerResult.PlannerSolution(cost, assignment));
         }
 
-        StringBuilder builder = new StringBuilder();
-        assignment.forEach((friend, activity) ->
-            builder.append(friend).append(" -> ").append(activity).append("\n"));
-        return Optional.of(builder.toString().trim());
+        return Optional.of(new PlannerResult(plannerSolutions));
     }
 }

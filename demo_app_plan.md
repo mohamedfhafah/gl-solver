@@ -29,7 +29,7 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
 3. **Couche solveur**
    - [x] Convertir les préférences saisies → coûts/matrice 0/1
    - [x] Construire le problème (variables, contraintes all-diff, minimisation)
-   - [ ] Afficher plusieurs solutions (top 3) si besoin
+   - [x] Afficher plusieurs solutions (top 3) si besoin
 4. **Expérience utilisateur**
    - [ ] Bouton « Voir une autre option » / export texte ou PDF (optionnel)
 5. **Tests / packaging**
