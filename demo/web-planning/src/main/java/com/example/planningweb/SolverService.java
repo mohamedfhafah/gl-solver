@@ -76,14 +76,16 @@ public class SolverService {
         if (!storedSolutions.isEmpty()) {
             var best = storedSolutions.get(0);
             for (int f = 0; f < friendCount; f++) {
+                final String friendName = friends.get(f);
                 for (int a = 0; a < activityCount; a++) {
+                    final String activityName = activities.get(a);
                     String varName = "F" + f + "A" + a;
                     best.stream()
                         .filter(assignmentVar -> assignmentVar.variableName().equals(varName))
                         .findFirst()
                         .ifPresent(assignmentVar -> {
                             if (assignmentVar.value() == 1) {
-                                assignment.put(friends.get(f), activities.get(a));
+                                assignment.put(friendName, activityName);
                             }
                         });
                 }
