@@ -15,11 +15,12 @@ Prototype d'interface JavaFX illustrant l'utilisation du solver GL pour organise
    ```
 
 ## Fonctionnement actuel
-- Les préférences sont chargées depuis `src/main/resources/preferences.json` (amis, activités, coûts).
-- Le solver utilise `alwaysReduceStrategy` + `minimize(cout)` pour trouver la meilleure affectation.
-- Le résultat est affiché dans un `TextArea`.
+- Les préférences sont chargées depuis `src/main/resources/preferences.json`.
+- Le tableau est éditable : modifier les coûts directement dans l'interface.
+- Le solver (`alwaysReduceStrategy` + `minimize(cout)`) calcule jusqu'à trois solutions optimales.
+- Bouton « Réinitialiser » pour revenir aux valeurs par défaut du JSON.
 
 ## Pistes d'amélioration
-- Ajouter une table éditable pour modifier les préférences.
-- Afficher plusieurs solutions optimales (top 3) ou proposer une option « Voir une autre soirée ».
-- Ajouter des visuels (avatars, icônes) et un export PDF/texte.
+- Ajouter curseurs/avatars pour rendre l'édition plus attractive.
+- Proposer un bouton « Voir une autre option » en parcourant toutes les solutions optimales.
+- Exporter le plan (PDF, texte) ou ajouter un historique.

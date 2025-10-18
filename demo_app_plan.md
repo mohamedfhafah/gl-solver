@@ -24,7 +24,7 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
    - [x] Créer module `demo/javafx-planning` avec JavaFX 21, dépendance jar solver dans `libs/`
    - [x] Ajouter un bridge solver complet (`SolverBridge.solveDemoProblem`)
 2. **Interface utilisateur**
-   - [ ] Remplacer l’UI mock par de vrais formulaires (table d’édition, curseurs, etc.)
+   - [x] Remplacer l’UI mock par de vrais formulaires (table d’édition, curseurs, etc.)
    - [ ] Ajouter animations/visuels (avatars, icônes)
 3. **Couche solveur**
    - [x] Convertir les préférences saisies → coûts/matrice 0/1
