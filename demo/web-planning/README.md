@@ -7,29 +7,41 @@ Prototype Spring Boot exposant le solver GL via une API `/planifier`.
 - Gradle 8+
 - Jar du solver : `demo/web-planning/libs/gl-solver.jar`
 
-## Installation
-1. Copier le jar généré (`build/libs/GL-Solver-1.0-SNAPSHOT.jar`) dans `demo/web-planning/libs/gl-solver.jar`.
-2. Lancer l'application :
-   ```bash
-   ./gradlew bootRun
-   ```
-3. Ouvrir l'interface web : [http://localhost:8080/](http://localhost:8080/)
-4. Tester l'API directement (exemple) :
-   ```bash
-   curl -X POST http://localhost:8080/planifier \
-        -H "Content-Type: application/json" \
-        -d '{"friends":["Alice","Bruno"],"activities":["Cinéma","Escape"]}'
-   ```
+## Installation / Lancement
+```bash
+# depuis la racine du repo
+./gradlew -p demo/web-planning bootRun
+# ou via le script commun
+./demo/launch-demo.sh web
+```
+Interface : [http://localhost:8080/](http://localhost:8080/)
+Test API :
+```bash
+curl -X POST http://localhost:8080/planifier \
+     -H "Content-Type: application/json" \
+     -d '{"friends":["Alice","Bruno"],"activities":["Cinéma","Escape"]}'
+```
 
 ## Fonctionnement
-- `SolverService` construit un problème d'affectation (amis vs activités).
-- Utilise `alwaysReduceStrategy()` et `minimize(cost)` pour trouver un coût minimal.
-- Retourne l'affectation optimale ainsi que le coût dans la réponse JSON.
+- `SolverService` centralise la construction du problème (amis vs activités).
+- Deux objectifs sont proposés : coût minimal et solution équilibrée (écarts plus homogènes).
+- La réponse JSON inclut affectation, coût optimum, nombre de nœuds explorés.
+
+## UI Web
+- Champs pour saisir amis/activités (laisser vide pour les données par défaut).
+- Cartes animées présentant les deux objectifs, jauge du nombre de nœuds, historique des requêtes.
+- Échelle des préférences rappelée dans la page (1 = adoré ; 10 = à éviter).
 
 ## Tests
-- `./gradlew test` exécute le test unitaire `SolverServiceTest`.
+```bash
+./gradlew -p demo/web-planning test
+```
+Le test `SolverServiceTest` vérifie l'intégration du solver.
 
 ## Améliorations possibles
 - Permettre de passer une matrice de coûts personnalisée via la requête.
 - Ajouter des contraintes supplémentaires (ex: préférences, disponibilités).
 - Ajouter une interface web pour saisir les données et visualiser le résultat.
+
+## Captures
+- Déposer vos captures d'écran dans `docs/screenshots` si vous souhaitez documenter la démo web.

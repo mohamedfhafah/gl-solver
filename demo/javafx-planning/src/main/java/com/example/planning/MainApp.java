@@ -35,14 +35,22 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        stage.setTitle("Planning de soirée – Prototype");
+        stage.setTitle("Planificateur de soirée intelligent");
 
         PreferenceDataset dataset = solverBridge.getDataset();
         activities = dataset.activities();
         rows = FXCollections.observableArrayList();
         dataset.friends().forEach(entry -> rows.add(new PreferenceRow(entry.name(), activities, entry.preferences())));
 
+        Label header = new Label("Planificateur intelligent de soirées");
+        header.getStyleClass().add("title");
+
+        Label subtitle = new Label("Ajustez les préférences de chacun : plus le nombre est petit, plus l'ami aime l'activité (1 = coup de cœur, 10 = à éviter).\nCliquez ensuite sur 'Planifier la soirée' pour obtenir les meilleures combinaisons.");
+        subtitle.getStyleClass().add("subtitle");
+
         TableView<PreferenceRow> table = buildTable();
+        table.setPrefHeight(320);
+
         ListView<String> output = new ListView<>();
         output.setPlaceholder(new Label("Aucune solution pour le moment"));
         output.getStyleClass().add("solution-view");
@@ -52,6 +60,7 @@ public class MainApp extends Application {
         Button nextButton = new Button("Solution suivante");
         nextButton.setDisable(true);
         Label statusLabel = new Label("En attente...");
+        statusLabel.getStyleClass().add("status");
 
         nextButton.setOnAction(event -> {
             if (!currentSolutions.isEmpty()) {
@@ -91,18 +100,40 @@ public class MainApp extends Application {
 
         HBox buttons = new HBox(12, solveButton, revertButton, nextButton);
         buttons.getStyleClass().add("button-bar");
+
+        VBox legend = new VBox(6,
+            new Label("Échelle de préférence"),
+            createLegendRow("1", "Activité préférée"),
+            createLegendRow("5", "Neutralité"),
+            createLegendRow("10", "À éviter"));
+        legend.getStyleClass().add("legend");
+
+        VBox leftCard = new VBox(18, header, subtitle, legend, table);
+        leftCard.getStyleClass().add("card");
+
         VBox controls = new VBox(12, buttons, statusLabel, output);
         controls.setPadding(new Insets(16));
+        controls.getStyleClass().add("card");
 
         BorderPane root = new BorderPane();
-        root.setCenter(table);
-        root.setRight(controls);
-        root.setPadding(new Insets(16));
+        root.setPadding(new Insets(24));
+        root.setLeft(leftCard);
+        BorderPane.setMargin(leftCard, new Insets(0, 18, 0, 0));
+        root.setCenter(controls);
 
-        Scene scene = new Scene(root, 940, 520);
+        Scene scene = new Scene(root, 980, 560);
         scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
+    }
+
+    private HBox createLegendRow(String label, String description) {
+        Label chip = new Label(label);
+        chip.getStyleClass().add("legend-chip");
+        Label text = new Label(description);
+        HBox row = new HBox(8, chip, text);
+        row.getStyleClass().add("legend-row");
+        return row;
     }
 
     private void displaySolution(ListView<String> output, Label statusLabel) {
