@@ -22,6 +22,8 @@ public class PlanningController {
         return ResponseEntity.ok(result);
     }
 
-    public record PlanningRequest(List<String> friends, List<String> activities) {
+    public record PlanningRequest(List<String> friends,
+                                  List<String> activities,
+                                  Map<String, Map<String, Integer>> preferences) {
     }
 }

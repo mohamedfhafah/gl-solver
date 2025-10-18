@@ -3,6 +3,7 @@ package com.example.planningweb;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,7 +15,11 @@ public class SolverServiceTest {
     void shouldReturnSolutionForBasicRequest() {
         var request = new PlanningController.PlanningRequest(
             List.of("Alice", "Bruno"),
-            List.of("Cinéma", "Escape")
+            List.of("Cinéma", "Escape"),
+            Map.of(
+                "Alice", Map.of("Cinéma", 1, "Escape", 5),
+                "Bruno", Map.of("Cinéma", 4, "Escape", 1)
+            )
         );
 
         var response = solverService.solve(request);

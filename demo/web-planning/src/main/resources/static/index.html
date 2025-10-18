@@ -2,103 +2,405 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8" />
-    <title>Planning de soirée – Démo Web</title>
+    <title>Planificateur de soirée – Démo Web</title>
     <style>
         :root {
             color-scheme: light;
-            font-family: 'Inter', Arial, sans-serif;
+            font-family: "Inter", "SF Pro Display", Arial, sans-serif;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg: #f1f5f9;
+            --card: #ffffff;
         }
-        body { margin: 0; background: #f3f4f6; padding: 2rem; }
-        h1 { color: #111827; margin-bottom: .5rem; }
-        p { color: #4b5563; }
-        textarea { width: 100%; min-height: 70px; padding: .75rem; border-radius: 8px; border: 1px solid #d1d5db; background: #fff; }
-        button { margin-top: 1rem; padding: .6rem 1.4rem; font-size: 1rem; border-radius: 999px; border: none; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; cursor: pointer; }
-        button:hover { filter: brightness(0.95); }
-        .layout { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
-        .panel { background: #fff; border-radius: 16px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08); padding: 1.5rem; }
-        .result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-        .card { border-radius: 14px; padding: 1.2rem; background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #fff; position: relative; overflow: hidden; }
-        .card.secondary { background: linear-gradient(135deg, #059669, #10b981); }
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            padding: 2.5rem;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #1e293b;
+            margin-bottom: .25rem;
+            font-size: 2.4rem;
+        }
+        p.lead {
+            color: #475569;
+            margin-top: 0;
+            margin-bottom: 2rem;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 2rem;
+        }
+        .panel {
+            background: rgba(255,255,255,0.92);
+            border-radius: 28px;
+            box-shadow: 0 32px 60px rgba(15,23,42,0.12);
+            padding: 1.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .panel h2 {
+            margin: 0;
+            color: #312e81;
+        }
+        .section-title {
+            font-weight: 600;
+            color: #4c1d95;
+            margin-bottom: .5rem;
+        }
+        .chip-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem;
+        }
+        .chip {
+            background: rgba(99,102,241,0.12);
+            border-radius: 999px;
+            padding: .45rem .9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            color: #312e81;
+            font-weight: 600;
+            transition: transform .2s ease;
+        }
+        .chip:hover {
+            transform: translateY(-2px);
+        }
+        .chip button {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: inherit;
+            font-weight: 700;
+        }
+        .input-row {
+            display: flex;
+            gap: .8rem;
+        }
+        .input-row input {
+            flex: 1;
+            border-radius: 14px;
+            border: 1px solid rgba(148,163,184,0.6);
+            padding: .6rem .9rem;
+            font-size: 1rem;
+        }
+        .input-row button, .primary-btn {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            border: none;
+            border-radius: 14px;
+            padding: .6rem 1.2rem;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform .2s ease, filter .2s ease;
+        }
+        .input-row button:hover, .primary-btn:hover {
+            filter: brightness(0.95);
+            transform: translateY(-1px);
+        }
+        .secondary-btn {
+            background: rgba(99,102,241,0.12);
+            border: none;
+            color: #312e81;
+            border-radius: 14px;
+            padding: .6rem 1rem;
+            cursor: pointer;
+        }
+        table.rating {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255,255,255,0.8);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 16px 40px rgba(15,23,42,0.08);
+        }
+        table.rating th, table.rating td {
+            padding: .75rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(148,163,184,0.25);
+        }
+        table.rating th {
+            background: rgba(99,102,241,0.12);
+            color: #312e81;
+        }
+        table.rating td label {
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            align-items: center;
+        }
+        table.rating input[type=range] {
+            width: 120px;
+        }
+        .cta-area {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.2rem;
+        }
+        .card {
+            border-radius: 18px;
+            padding: 1.4rem;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 45px rgba(15,23,42,0.15);
+        }
+        .card.primary { background: linear-gradient(135deg, #2563eb, #38bdf8); }
+        .card.secondary { background: linear-gradient(135deg, #22c55e, #0ea5e9); }
         .card.tertiary { background: linear-gradient(135deg, #f97316, #fb923c); }
-        .card h2 { margin: 0 0 .5rem 0; font-size: 1.2rem; }
-        .chip { background: rgba(255,255,255,0.2); display: inline-block; padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; margin-right: .4rem; }
-        .assignment { margin-top: .8rem; }
-        .assignment div { margin: .25rem 0; display: flex; justify-content: space-between; }
-        .assignment span { font-weight: 600; }
-        .alternatives { margin-top: 1rem; font-size: .85rem; opacity: .9; }
-        .alternatives .alt { margin-top: .2rem; }
-        .history { list-style: none; padding: 0; margin: 0; }
-        .history li { background: #fff; padding: 1rem; border-radius: 12px; margin-bottom: .8rem; box-shadow: 0 6px 12px rgba(15,23,42,0.08); }
-        .meter { height: 8px; background: rgba(255,255,255,0.3); border-radius: 999px; margin-top: .5rem; overflow: hidden; }
+        .card h3 { margin: 0 0 .4rem 0; }
+        .card p { margin: .1rem 0; }
+        .chip-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(255,255,255,0.2);
+            border-radius: 999px;
+            padding: .25rem .7rem;
+            font-size: .75rem;
+            margin-bottom: .6rem;
+        }
+        .assignments { margin-top: .6rem; }
+        .assignments div { display: flex; justify-content: space-between; margin-top: .25rem; }
+        .meter { height: 8px; background: rgba(255,255,255,0.25); border-radius: 999px; margin-top: .6rem; }
         .meter span { display: block; height: 100%; background: rgba(255,255,255,0.9); }
-        .error { color: #b91c1c; font-weight: bold; }
-        @media(max-width: 960px) { .layout { grid-template-columns: 1fr; } }
+        .alternatives { margin-top: .8rem; font-size: .85rem; opacity: .92; }
+        .history { display: flex; flex-direction: column; gap: .8rem; }
+        .history-entry {
+            background: rgba(255,255,255,0.88);
+            border-radius: 16px;
+            padding: 1rem;
+            box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+        }
+        .history-entry h4 { margin: 0 0 .4rem 0; }
+        .history-entry p { margin: .2rem 0; color: #475569; }
+        .step-title { font-weight: 600; color: #312e81; margin-bottom: .4rem; }
+        .divider { height: 1px; background: rgba(148,163,184,0.25); margin: .6rem 0; }
+        .error { color: #b91c1c; font-weight: 600; }
+        .fade-in { animation: fadeIn .35s ease forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media(max-width: 1024px) {
+            .layout { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <h1>Planifier la soirée</h1>
-    <p>Modifiez les champs pour tester d'autres scénarios (laissez vide pour jouer avec le dataset par défaut).</p>
+    <h1>Planificateur de soirée collaboratif</h1>
+    <p class="lead">Définissez votre groupe, notez les activités de 1 (adoré) à 10 (à éviter) et laissez GL‑Solver proposer les 3 meilleurs plans, y compris une sortie commune.</p>
+
     <div class="layout">
-        <div class="panel">
-            <label>Amis</label>
-            <textarea id="friends" placeholder="Alice, Bruno, Chloé, David"></textarea>
-            <label style="margin-top:1rem;">Activités</label>
-            <textarea id="activities" placeholder="Cinéma, Escape Game, Restaurant, Karaoké"></textarea>
-            <button id="submit">Calculer</button>
-            <div id="result" style="margin-top:1.5rem;"></div>
+        <div class="panel" id="builder">
+            <div>
+                <div class="section-title">Étape 1 — Amis</div>
+                <div class="input-row">
+                    <input id="friendInput" placeholder="Nom de l'ami" />
+                    <button id="addFriend">Ajouter</button>
+                    <button class="secondary-btn" id="loadExample">Charger exemple</button>
+                </div>
+                <div id="friendsChips" class="chip-list"></div>
+            </div>
+
+            <div>
+                <div class="section-title">Étape 2 — Activités</div>
+                <div class="input-row">
+                    <input id="activityInput" placeholder="Nom de l'activité" />
+                    <button id="addActivity">Ajouter</button>
+                </div>
+                <div id="activitiesChips" class="chip-list"></div>
+            </div>
+
+            <div>
+                <div class="section-title">Étape 3 — Préférences (1 = coup de cœur, 10 = à éviter)</div>
+                <div id="ratingContainer"></div>
+            </div>
+
+            <div class="cta-area">
+                <button class="primary-btn" id="computeBtn">Calculer les plans</button>
+                <span id="builderStatus" class="status">Complétez les étapes pour lancer le solver.</span>
+            </div>
         </div>
-        <div class="panel">
-            <h2 style="margin-top:0;">Historique</h2>
-            <ul id="history" class="history"></ul>
+
+        <div class="panel" id="resultsPanel">
+            <h2>Résultats</h2>
+            <div id="result" class="fade-in"></div>
+            <div class="divider"></div>
+            <h2>Historique</h2>
+            <div id="history" class="history"></div>
         </div>
     </div>
 
     <script>
+        const defaultDataset = {
+            friends: ["Alice", "Bruno", "Chloé", "David"],
+            activities: ["Cinéma", "Escape Game", "Restaurant", "Karaoké"],
+            preferences: {
+                "Alice": {"Cinéma": 1, "Escape Game": 3, "Restaurant": 4, "Karaoké": 6},
+                "Bruno": {"Cinéma": 4, "Escape Game": 1, "Restaurant": 5, "Karaoké": 3},
+                "Chloé": {"Cinéma": 6, "Escape Game": 2, "Restaurant": 1, "Karaoké": 4},
+                "David": {"Cinéma": 3, "Escape Game": 4, "Restaurant": 2, "Karaoké": 1}
+            }
+        };
+
+        let friends = [];
+        let activities = [];
+        let preferences = {};
         const history = [];
+
+        const friendsChips = document.getElementById('friendsChips');
+        const activitiesChips = document.getElementById('activitiesChips');
+        const ratingContainer = document.getElementById('ratingContainer');
+        const resultDiv = document.getElementById('result');
         const historyList = document.getElementById('history');
+        const statusLabel = document.getElementById('builderStatus');
 
-        document.getElementById('submit').addEventListener('click', async () => {
-            const friendsInput = document.getElementById('friends').value.trim();
-            const activitiesInput = document.getElementById('activities').value.trim();
+        document.getElementById('addFriend').addEventListener('click', () => {
+            const value = document.getElementById('friendInput').value.trim();
+            if (!value || friends.includes(value)) return;
+            friends.push(value);
+            document.getElementById('friendInput').value = '';
+            renderFriends();
+            ensurePreferenceEntries();
+            renderMatrix();
+        });
 
-            const friends = friendsInput ? friendsInput.split(',').map(v => v.trim()).filter(Boolean) : [];
-            const activities = activitiesInput ? activitiesInput.split(',').map(v => v.trim()).filter(Boolean) : [];
+        document.getElementById('addActivity').addEventListener('click', () => {
+            const value = document.getElementById('activityInput').value.trim();
+            if (!value || activities.includes(value)) return;
+            activities.push(value);
+            document.getElementById('activityInput').value = '';
+            renderActivities();
+            ensurePreferenceEntries();
+            renderMatrix();
+        });
 
-            const payload = { friends, activities };
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = '<p>Calcul en cours…</p>';
+        document.getElementById('loadExample').addEventListener('click', () => {
+            friends = [...defaultDataset.friends];
+            activities = [...defaultDataset.activities];
+            preferences = JSON.parse(JSON.stringify(defaultDataset.preferences));
+            renderFriends();
+            renderActivities();
+            renderMatrix();
+            statusLabel.textContent = "Exemple chargé. Ajustez les valeurs puis calculez.";
+        });
 
+        document.getElementById('computeBtn').addEventListener('click', async () => {
+            if (friends.length === 0 || activities.length === 0) {
+                statusLabel.textContent = "Ajoutez au moins un ami et une activité.";
+                statusLabel.classList.add('error');
+                return;
+            }
+            statusLabel.textContent = "Calcul en cours…";
+            statusLabel.classList.remove('error');
             try {
+                const payload = { friends, activities, preferences };
                 const response = await fetch('/planifier', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const data = await response.json();
-
                 if (data.status === 'ok') {
                     displayResults(data);
                     addToHistory(data);
+                    statusLabel.textContent = "Plan(s) calculé(s).";
                 } else if (data.status === 'no_solution') {
                     resultDiv.innerHTML = '<p class="error">Aucune solution trouvée</p>';
+                    statusLabel.textContent = "Aucune solution trouvée.";
                 } else {
                     resultDiv.innerHTML = `<p class="error">${data.message || 'Erreur inattendue'}</p>`;
+                    statusLabel.textContent = "Erreur lors du calcul.";
+                    statusLabel.classList.add('error');
                 }
             } catch (error) {
                 resultDiv.innerHTML = `<p class="error">Erreur : ${error}</p>`;
+                statusLabel.textContent = "Erreur lors du calcul.";
+                statusLabel.classList.add('error');
             }
         });
 
+        function renderFriends() {
+            friendsChips.innerHTML = friends.map(friend =>
+                `<span class="chip">${friend}<button onclick="removeFriend('${friend}')">×</button></span>`
+            ).join('');
+        }
+
+        function renderActivities() {
+            activitiesChips.innerHTML = activities.map(activity =>
+                `<span class="chip">${activity}<button onclick="removeActivity('${activity}')">×</button></span>`
+            ).join('');
+        }
+
+        window.removeFriend = (friend) => {
+            friends = friends.filter(f => f !== friend);
+            delete preferences[friend];
+            renderFriends();
+            renderMatrix();
+        };
+
+        window.removeActivity = (activity) => {
+            activities = activities.filter(a => a !== activity);
+            for (const friend in preferences) {
+                delete preferences[friend][activity];
+            }
+            renderActivities();
+            renderMatrix();
+        };
+
+        function ensurePreferenceEntries() {
+            friends.forEach(friend => {
+                preferences[friend] = preferences[friend] || {};
+                activities.forEach(activity => {
+                    if (preferences[friend][activity] === undefined) {
+                        preferences[friend][activity] = 5;
+                    }
+                });
+            });
+        }
+
+        function renderMatrix() {
+            if (friends.length === 0 || activities.length === 0) {
+                ratingContainer.innerHTML = '<p class="error">Ajoutez amis et activités pour saisir les préférences.</p>';
+                return;
+            }
+            let html = '<table class="rating fade-in"><thead><tr><th>Ami</th>' +
+                activities.map(activity => `<th>${activity}</th>`).join('') + '</tr></thead><tbody>';
+            friends.forEach(friend => {
+                html += `<tr><td>${friend}</td>`;
+                activities.forEach(activity => {
+                    const value = preferences[friend][activity] ?? 5;
+                    html += `<td><label>${value}<input type="range" min="1" max="10" value="${value}" oninput="updatePreference('${friend}','${activity}',this.value)"/></label></td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            ratingContainer.innerHTML = html;
+        }
+
+        window.updatePreference = (friend, activity, value) => {
+            preferences[friend][activity] = parseInt(value, 10);
+            renderMatrix();
+        };
+
         function displayResults(data) {
-            const resultDiv = document.getElementById('result');
             const min = data.minCost;
             const balanced = data.balanced;
             const group = (data.group && data.group.suggestions) ? data.group.suggestions : [];
             const groupCard = group.length ? renderGroupCard(group) : '';
             resultDiv.innerHTML = `
-                <div class="result-grid">
-                    ${renderCard('Planning individuel', min, '#38bdf8', 'Répartition optimale pour chacun')} 
-                    ${balanced ? renderCard('Solution équilibrée', balanced, '#f97316', 'Réduit les écarts de satisfaction') : ''}
+                <div class="result-grid fade-in">
+                    ${renderCard('Planning individuel', min, '#2563eb', 'Répartition optimale pour chacun')} 
+                    ${balanced ? renderCard('Solution équilibrée', balanced, '#0ea5e9', 'Réduit les écarts de satisfaction') : ''}
                     ${groupCard}
                 </div>
             `;
@@ -111,14 +413,14 @@
             const nodes = payload.nodes;
             const width = Math.min(100, nodes / 50);
             return `
-                <div class="card" style="background:${accentColor};">
-                    <span class="chip">${payload.solutions} solutions</span>
-                    <h2>${title}</h2>
-                    <p style="margin:0 0 6px 0;">${subtitle}</p>
-                    <p style="margin:0;">Coût : <strong>${payload.cost}</strong></p>
-                    <p style="margin:0;">Nœuds explorés : ${nodes}</p>
+                <div class="card primary" style="background:${accentColor};">
+                    <span class="chip-badge">${payload.solutions} solutions</span>
+                    <h3>${title}</h3>
+                    <p>${subtitle}</p>
+                    <p>Coût : <strong>${payload.cost}</strong></p>
+                    <p>Nœuds explorés : ${nodes}</p>
                     <div class="meter"><span style="width:${width}%"></span></div>
-                    <div class="assignment">${assignmentHtml}</div>
+                    <div class="assignments">${assignmentHtml}</div>
                 </div>
             `;
         }
@@ -134,12 +436,11 @@
                 .join('');
             return `
                 <div class="card tertiary">
-                    <span class="chip">Activité commune</span>
-                    <h2>${best.activity}</h2>
-                    <p style="margin:0;">Score global : <strong>${best.total}</strong> (moyenne ${best.average.toFixed(2)})</p>
-                    <p style="margin:0;">Ami le moins satisfait : ${best.worst}</p>
+                    <span class="chip-badge">Sortie commune</span>
+                    <h3>${best.activity}</h3>
+                    <p>Score global : <strong>${best.total}</strong> (moyenne ${best.average.toFixed(2)}, pire note ${best.worst})</p>
                     <div class="meter"><span style="width:${width}%"></span></div>
-                    <div class="assignment">${details}</div>
+                    <div class="assignments">${details}</div>
                     ${alternatives ? `<div class="alternatives"><strong>Alternatives :</strong>${alternatives}</div>` : ''}
                 </div>
             `;
@@ -157,13 +458,17 @@
 
             historyList.innerHTML = history
                 .map(entry => `
-                    <li>
-                        <strong>${entry.timestamp}</strong><br/>
-                        Coût individuel : ${entry.minCost.cost} – Activité commune : ${entry.group ? entry.group.activity : 'n/a'}
-                    </li>
+                    <div class="history-entry fade-in">
+                        <h4>${entry.timestamp}</h4>
+                        <p>Coût individuel : ${entry.minCost.cost}</p>
+                        <p>Activité commune : ${entry.group ? entry.group.activity : 'n/a'}</p>
+                    </div>
                 `)
                 .join('');
         }
+
+        // Initial render
+        renderMatrix();
     </script>
 </body>
 </html>

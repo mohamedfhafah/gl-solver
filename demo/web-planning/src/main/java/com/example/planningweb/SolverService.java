@@ -27,7 +27,7 @@ public class SolverService {
             ? dataset.activities()
             : request.activities();
 
-        int[][] baseCosts = buildCostsMatrix(friends, activities);
+        int[][] baseCosts = buildCostsMatrix(friends, activities, request.preferences());
         Optional<SolutionSummary> minCost = solveWithCosts(friends, activities, baseCosts, "cost");
         if (minCost.isEmpty()) {
             return Map.of("status", "no_solution");
@@ -126,14 +126,21 @@ public class SolverService {
         return Optional.of(new SolutionSummary(costValue, solver.getNodesCounter(), assignment, solutionCount));
     }
 
-    private int[][] buildCostsMatrix(List<String> friends, List<String> activities) {
+    private int[][] buildCostsMatrix(List<String> friends,
+                                     List<String> activities,
+                                     Map<String, Map<String, Integer>> customPreferences) {
         var datasetMap = dataset.friends().stream()
             .collect(Collectors.toMap(PreferenceDataset.PreferenceEntry::name, PreferenceDataset.PreferenceEntry::preferences));
 
         int[][] costs = new int[friends.size()][activities.size()];
         for (int f = 0; f < friends.size(); f++) {
             String friendName = friends.get(f);
-            var preferences = datasetMap.get(friendName);
+            Map<String, Integer> preferences = null;
+            if (customPreferences != null && customPreferences.containsKey(friendName)) {
+                preferences = customPreferences.get(friendName);
+            } else {
+                preferences = datasetMap.get(friendName);
+            }
 
             for (int a = 0; a < activities.size(); a++) {
                 String activity = activities.get(a);

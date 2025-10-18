@@ -15,22 +15,24 @@ Prototype Spring Boot exposant le solver GL via une API `/planifier`.
 ./demo/launch-demo.sh web
 ```
 Interface : [http://localhost:8080/](http://localhost:8080/)
-Test API :
+Test API (avec matrice personnalisée) :
 ```bash
 curl -X POST http://localhost:8080/planifier \
      -H "Content-Type: application/json" \
-     -d '{"friends":["Alice","Bruno"],"activities":["Cinéma","Escape"]}'
+     -d '{"friends":["Alice","Bruno"],"activities":["Cinéma","Escape"],"preferences":{"Alice":{"Cinéma":1,"Escape":5},"Bruno":{"Cinéma":4,"Escape":1}}}'
 ```
 
 ## Fonctionnement
 - `SolverService` centralise la construction du problème (amis vs activités).
 - Deux objectifs sont proposés : coût minimal et solution équilibrée (écarts plus homogènes).
-- La réponse JSON inclut affectation, coût optimum, nombre de nœuds explorés.
+- Une sortie commune (activité unique) est également suggérée (top 3 des activités partagées).
+- La réponse JSON inclut affectation, coûts, nœuds explorés, et détails par activité.
 
 ## UI Web
-- Champs pour saisir amis/activités (laisser vide pour les données par défaut).
-- Cartes animées présentant les deux objectifs, jauge du nombre de nœuds, historique des requêtes.
-- Échelle des préférences rappelée dans la page (1 = adoré ; 10 = à éviter).
+- Étapes guidées : création du groupe, choix des activités, saisie des préférences (1 = adoré ; 10 = à éviter).
+- Table dynamique avec sliders interactifs pour chaque couple ami/activité.
+- Cartes animées présentant les plans individuels, la solution équilibrée et le podium des sorties communes.
+- Historique des requêtes et jauge des nœuds explorés.
 
 ## Tests
 ```bash
