@@ -138,11 +138,11 @@ public class MainApp extends Application {
         table.getColumns().add(friendCol);
 
         for (String activity : activities) {
-            TableColumn<PreferenceRow, Number> column = new TableColumn<>(activity);
-            column.setCellValueFactory(cellData -> cellData.getValue().valueProperty(activity));
+            TableColumn<PreferenceRow, Integer> column = new TableColumn<>(activity);
+            column.setCellValueFactory(cellData -> cellData.getValue().valueProperty(activity).asObject());
             column.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
             column.setOnEditCommit(event -> {
-                int newValue = event.getNewValue() != null ? event.getNewValue().intValue() : event.getOldValue().intValue();
+                int newValue = event.getNewValue() != null ? event.getNewValue() : event.getOldValue();
                 event.getRowValue().valueProperty(activity).set(newValue);
             });
             column.setPrefWidth(120);
