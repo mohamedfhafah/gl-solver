@@ -11,7 +11,7 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
 
 ## 1. Préparation
 - [x] Créer la branche locale `demo-app` et isoler le travail
-- [ ] Générer le jar du solver (`./gradlew jar`) pour réutilisation (à faire côté local)
+- [x] Générer le jar du solver (`./gradlew jar`) pour réutilisation
 - [x] Poser la structure de base :
   - dossier `demo/javafx-planning` (Gradle + JavaFX, jar attendu dans `libs/`)
   - dossier `demo/web-planning` (Gradle + Spring Boot, jar attendu dans `libs/`)
