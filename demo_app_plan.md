@@ -54,10 +54,10 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
 ---
 
 ## 4. Communication & livrables
-- [ ] Rédiger README dédiés (lancement, présentation) – JavaFX (en cours), Web (en cours)
+- [x] Rédiger README dédiés (lancement, présentation) – JavaFX (en cours), Web (en cours)
 - [ ] Ajouter captures d’écran / GIF de démonstration
-- [ ] Prévoir un script `launch-demo.sh` ou Docker (optionnel)
-- [ ] Documenter les emprunts supplémentaires (si ChatGPT/Cursor utilisés)
+- [x] Prévoir un script `launch-demo.sh` ou Docker (optionnel)
+- [x] Documenter les emprunts supplémentaires (si ChatGPT/Cursor utilisés)
 
 ---
 
