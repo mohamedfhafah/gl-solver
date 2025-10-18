@@ -22,18 +22,18 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
 ## 2. Démo JavaFX – Planning de soirée
 1. **Structure projet**
    - [x] Créer module `demo/javafx-planning` avec JavaFX 21, dépendance jar solver dans `libs/`
-   - [ ] Ajouter un bridge solver complet (`SolverBridge.solveDemoProblem`)
+   - [x] Ajouter un bridge solver complet (`SolverBridge.solveDemoProblem`)
 2. **Interface utilisateur**
    - [ ] Remplacer l’UI mock par de vrais formulaires (table d’édition, curseurs, etc.)
    - [ ] Ajouter animations/visuels (avatars, icônes)
 3. **Couche solveur**
-   - [ ] Convertir les préférences saisies → coûts/matrice 0/1
-   - [ ] Construire le problème (variables, contraintes all-diff, minimisation)
+   - [x] Convertir les préférences saisies → coûts/matrice 0/1
+   - [x] Construire le problème (variables, contraintes all-diff, minimisation)
    - [ ] Afficher plusieurs solutions (top 3) si besoin
 4. **Expérience utilisateur**
    - [ ] Bouton « Voir une autre option » / export texte ou PDF (optionnel)
 5. **Tests / packaging**
-   - [ ] Documenter les commandes (`./gradlew run`) + prérequis JavaFX
+   - [x] Documenter les commandes (`./gradlew run`) + prérequis JavaFX
 
 ---
 

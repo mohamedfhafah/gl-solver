@@ -5,17 +5,21 @@ Prototype d'interface JavaFX illustrant l'utilisation du solver GL pour organise
 ## Pré-requis
 - Java 17+
 - Gradle 8+
-- Jar du solver (`gl-solver.jar`) compilé via `./gradlew jar` depuis le projet principal.
+- Jar du solver : `demo/javafx-planning/libs/gl-solver.jar`
 
 ## Installation
-1. Copier le jar généré dans `demo/javafx-planning/libs/gl-solver.jar` (le dossier `libs/` est ignoré par Git).
-2. Depuis ce répertoire, lancer :
+1. Copier le jar généré (`build/libs/GL-Solver-1.0-SNAPSHOT.jar`) dans `demo/javafx-planning/libs/gl-solver.jar`.
+2. Depuis ce répertoire :
    ```bash
    ./gradlew run
    ```
-3. Adapter `SolverBridge` pour modéliser réellement le problème d'affectation (amis vs activités, préférences, coûts).
 
-## Étapes suivantes
-- Ajouter des contrôles pour modifier les préférences depuis l'UI.
-- Afficher plusieurs solutions optimales (pas uniquement la meilleure).
-- Ajouter des visuels/avatars pour rendre la démo plus ludique.
+## Fonctionnement actuel
+- Les préférences (coûts) sont codées en dur côté Java (Alice/Bruno/Chloé/David et 4 activités).
+- Le solver utilise `alwaysReduceStrategy` + `minimize(cout)` pour trouver la meilleure affectation.
+- Le résultat est affiché dans un `TextArea` (ex. « Alice -> Cinéma »).
+
+## Pistes d'amélioration
+- Ajouter une table éditable pour modifier les préférences.
+- Afficher plusieurs solutions optimales (top 3) ou proposer une option « Voir une autre soirée ».
+- Ajouter des visuels (avatars, icônes) et un export PDF/texte.
