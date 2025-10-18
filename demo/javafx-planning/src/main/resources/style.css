@@ -1,0 +1,25 @@
+.root {
+    -fx-base: #f6f8fb;
+}
+.table-view {
+    -fx-border-color: #d0d7de;
+}
+.button-bar .button {
+    -fx-background-color: #4f46e5;
+    -fx-text-fill: white;
+}
+.button-bar .button:hover {
+    -fx-background-color: #4338ca;
+}
+.solution-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d0d7de;
+    -fx-border-radius: 6;
+    -fx-padding: 8;
+}
+.solution-view .list-cell {
+    -fx-font-family: "SF Pro Display";
+    -fx-font-size: 14px;
+    -fx-text-fill: #1f2937;
+}
+*** End Patch

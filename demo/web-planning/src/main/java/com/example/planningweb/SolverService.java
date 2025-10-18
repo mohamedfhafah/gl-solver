@@ -1,33 +1,55 @@
 package com.example.planningweb;
 
+import fr.univamu.solver.domain.Variable;
 import fr.univamu.solver.engine.Solver;
 
-import fr.univamu.solver.domain.Variable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Service d'exemple pour montrer comment encapsuler l'appel au solver.
- * Remplacer la logique de démonstration par un véritable problème d'affectation.
+ * Service illustrant l'utilisation du solver GL côté backend.
  */
 public class SolverService {
 
     private final PreferenceDataset dataset = PreferencesLoader.loadDefaultDataset();
 
     public Map<String, Object> solve(PlanningController.PlanningRequest request) {
-        List<String> friends = request.friends();
-        List<String> activities = request.activities();
-        if (friends == null || activities == null || friends.isEmpty() || activities.isEmpty()) {
-            friends = dataset.friends().stream().map(PreferenceDataset.PreferenceEntry::name).toList();
-            activities = dataset.activities();
+        List<String> friends = (request.friends() == null || request.friends().isEmpty())
+            ? dataset.friends().stream().map(PreferenceDataset.PreferenceEntry::name).toList()
+            : request.friends();
+        List<String> activities = (request.activities() == null || request.activities().isEmpty())
+            ? dataset.activities()
+            : request.activities();
+
+        int[][] baseCosts = buildCostsMatrix(friends, activities);
+        Optional<SolutionSummary> minCost = solveWithCosts(friends, activities, baseCosts, "cost");
+        if (minCost.isEmpty()) {
+            return Map.of("status", "no_solution");
         }
 
+        int[][] balancedCosts = buildBalancedCosts(baseCosts);
+        Optional<SolutionSummary> balanced = solveWithCosts(friends, activities, balancedCosts, "balanced_cost");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "ok");
+        response.put("friends", friends);
+        response.put("activities", activities);
+        response.put("minCost", minCost.get().toMap());
+        response.put("balanced", balanced.map(SolutionSummary::toMap).orElse(null));
+        return response;
+    }
+
+    private Optional<SolutionSummary> solveWithCosts(List<String> friends,
+                                                     List<String> activities,
+                                                     int[][] costs,
+                                                     String costVarName) {
         int friendCount = friends.size();
         int activityCount = activities.size();
-        int[][] costs = buildCostsMatrix(friends, activities);
 
         var solver = new Solver();
         solver.alwaysReduceStrategy();
@@ -63,47 +85,42 @@ public class SolverService {
                 costExpression = solver.expression(costExpression, "+", matrix[f][a], "*", costs[f][a]);
             }
         }
-        var costVar = solver.newVar("cost", 0, 1000);
+        var costVar = solver.newVar(costVarName, 0, 10_000);
         solver.addRelation(costExpression, "=", costVar);
         solver.minimize(costVar);
 
         long solutionCount = solver.solve();
         if (solutionCount == 0) {
-            return Map.of("status", "no_solution");
+            return Optional.empty();
         }
 
-        Map<String, String> assignment = new LinkedHashMap<>();
         var storedSolutions = solver.getSolutions().getStoredSolutions();
-        if (!storedSolutions.isEmpty()) {
-            var best = storedSolutions.get(0);
-            for (int f = 0; f < friendCount; f++) {
-                final String friendName = friends.get(f);
-                for (int a = 0; a < activityCount; a++) {
-                    final String activityName = activities.get(a);
-                    String varName = "F" + f + "A" + a;
-                    best.stream()
-                        .filter(assignmentVar -> assignmentVar.variableName().equals(varName))
-                        .findFirst()
-                        .ifPresent(assignmentVar -> {
-                            if (assignmentVar.value() == 1) {
-                                assignment.put(friendName, activityName);
-                            }
-                        });
-                }
+        var best = storedSolutions.get(0);
+
+        Map<String, String> assignment = new LinkedHashMap<>();
+        for (int f = 0; f < friendCount; f++) {
+            final String friendName = friends.get(f);
+            for (int a = 0; a < activityCount; a++) {
+                final String activityName = activities.get(a);
+                String varName = "F" + f + "A" + a;
+                best.stream()
+                    .filter(assignmentVar -> assignmentVar.variableName().equals(varName))
+                    .findFirst()
+                    .ifPresent(assignmentVar -> {
+                        if (assignmentVar.value() == 1) {
+                            assignment.put(friendName, activityName);
+                        }
+                    });
             }
         }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "ok");
-        response.put("friends", friends);
-        response.put("activities", activities);
-        response.put("assignment", assignment);
-        response.put("optimalCost", solver.getSolutions().getStoredSolutions().isEmpty() ? null
-            : solver.getSolutions().getStoredSolutions().get(0).stream()
-                .filter(a -> a.variableName().equals("cost"))
-                .findFirst().map(a -> a.value()).orElse(null));
+        int costValue = best.stream()
+            .filter(a -> a.variableName().equals(costVarName))
+            .findFirst()
+            .map(a -> a.value())
+            .orElse(0);
 
-        return response;
+        return Optional.of(new SolutionSummary(costValue, solver.getNodesCounter(), assignment, solutionCount));
     }
 
     private int[][] buildCostsMatrix(List<String> friends, List<String> activities) {
@@ -123,5 +140,39 @@ public class SolverService {
             }
         }
         return costs;
+    }
+
+    private int[][] buildBalancedCosts(int[][] baseCosts) {
+        int friends = baseCosts.length;
+        int activities = baseCosts[0].length;
+        int[][] balanced = new int[friends][activities];
+
+        double[] averages = new double[friends];
+        for (int f = 0; f < friends; f++) {
+            double sum = 0;
+            for (int a = 0; a < activities; a++) {
+                sum += baseCosts[f][a];
+            }
+            averages[f] = sum / activities;
+        }
+
+        for (int f = 0; f < friends; f++) {
+            for (int a = 0; a < activities; a++) {
+                int diff = (int)Math.abs(baseCosts[f][a] - averages[f]);
+                balanced[f][a] = diff * 4 + baseCosts[f][a];
+            }
+        }
+        return balanced;
+    }
+
+    private record SolutionSummary(int cost, long nodes, Map<String, String> assignment, long solutions) {
+        Map<String, Object> toMap() {
+            return Map.of(
+                "cost", cost,
+                "nodes", nodes,
+                "assignment", assignment,
+                "solutions", solutions
+            );
+        }
     }
 }

@@ -25,13 +25,13 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
    - [x] Ajouter un bridge solver complet (`SolverBridge.solveDemoProblem`)
 2. **Interface utilisateur**
    - [x] Remplacer l’UI mock par de vrais formulaires (table d’édition, curseurs, etc.)
-   - [ ] Ajouter animations/visuels (avatars, icônes)
+   - [x] Ajouter animations/visuels (avatars, icônes)
 3. **Couche solveur**
    - [x] Convertir les préférences saisies → coûts/matrice 0/1
    - [x] Construire le problème (variables, contraintes all-diff, minimisation)
    - [x] Afficher plusieurs solutions (top 3) si besoin
 4. **Expérience utilisateur**
-   - [ ] Bouton « Voir une autre option » / export texte ou PDF (optionnel)
+   - [x] Bouton « Voir une autre option » / export texte ou PDF (optionnel)
 5. **Tests / packaging**
    - [x] Documenter les commandes (`./gradlew run`) + prérequis JavaFX
 
@@ -43,12 +43,12 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
    - [x] Implémenter `SolverService` avec le solver réel
 2. **Frontend**
    - [x] Concevoir une page web (formulaire préférences, bouton « Calculer », affichage résultats)
-   - [ ] Ajouter visualisation (cartes, jauges, historique)
+   - [x] Ajouter visualisation (cartes, jauges, historique)
 3. **Fonctionnalités bonus**
-   - [ ] Comparaison multi-objectifs (coût vs satisfaction)
-   - [ ] Visualisation du nombre de nœuds explorés
+   - [x] Comparaison multi-objectifs (coût vs satisfaction)
+   - [x] Visualisation du nombre de nœuds explorés
 4. **Intégration solver**
-   - [ ] Centraliser les mappings données → solver (service partagé)
+   - [x] Centraliser les mappings données → solver (service partagé)
    - [x] Ecrire des tests unitaires sur le service/contrôleur
 
 ---

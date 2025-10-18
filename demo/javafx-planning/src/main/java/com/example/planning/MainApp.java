@@ -30,6 +30,8 @@ public class MainApp extends Application {
     private final SolverBridge solverBridge = new SolverBridge();
     private ObservableList<PreferenceRow> rows;
     private List<String> activities;
+    private List<PlannerResult.PlannerSolution> currentSolutions = new ArrayList<>();
+    private int currentIndex = 0;
 
     @Override
     public void start(Stage stage) {
@@ -43,10 +45,20 @@ public class MainApp extends Application {
         TableView<PreferenceRow> table = buildTable();
         ListView<String> output = new ListView<>();
         output.setPlaceholder(new Label("Aucune solution pour le moment"));
+        output.getStyleClass().add("solution-view");
 
         Button solveButton = new Button("Planifier la soirée");
         Button revertButton = new Button("Réinitialiser");
+        Button nextButton = new Button("Solution suivante");
+        nextButton.setDisable(true);
         Label statusLabel = new Label("En attente...");
+
+        nextButton.setOnAction(event -> {
+            if (!currentSolutions.isEmpty()) {
+                currentIndex = (currentIndex + 1) % currentSolutions.size();
+                displaySolution(output, statusLabel);
+            }
+        });
 
         solveButton.setOnAction(event -> {
             statusLabel.setText("Calcul en cours...");
@@ -59,20 +71,14 @@ public class MainApp extends Application {
             }
 
             solverBridge.solve(friends, activities, costs).ifPresentOrElse(result -> {
-                output.getItems().clear();
-                int index = 1;
-                for (PlannerResult.PlannerSolution solution : result.solutions()) {
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("Solution ").append(index++).append(" (coût = ")
-                        .append(solution.cost()).append(")\n");
-                    solution.assignment().forEach((friend, activity) ->
-                        builder.append("  • ").append(friend).append(" → ").append(activity).append("\n"));
-                    output.getItems().add(builder.toString());
-                }
-                statusLabel.setText("Solutions optimales affichées");
+                currentSolutions = result.solutions();
+                currentIndex = 0;
+                nextButton.setDisable(currentSolutions.size() <= 1);
+                displaySolution(output, statusLabel);
             }, () -> {
                 output.getItems().clear();
                 statusLabel.setText("Aucune solution trouvée");
+                nextButton.setDisable(true);
             });
         });
 
@@ -83,7 +89,8 @@ public class MainApp extends Application {
 
         table.setItems(rows);
 
-        HBox buttons = new HBox(12, solveButton, revertButton);
+        HBox buttons = new HBox(12, solveButton, revertButton, nextButton);
+        buttons.getStyleClass().add("button-bar");
         VBox controls = new VBox(12, buttons, statusLabel, output);
         controls.setPadding(new Insets(16));
 
@@ -92,8 +99,33 @@ public class MainApp extends Application {
         root.setRight(controls);
         root.setPadding(new Insets(16));
 
-        stage.setScene(new Scene(root, 940, 520));
+        Scene scene = new Scene(root, 940, 520);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        stage.setScene(scene);
         stage.show();
+    }
+
+    private void displaySolution(ListView<String> output, Label statusLabel) {
+        if (currentSolutions.isEmpty()) {
+            output.getItems().clear();
+            statusLabel.setText("Aucune solution trouvée");
+            return;
+        }
+        PlannerResult.PlannerSolution solution = currentSolutions.get(currentIndex);
+        StringBuilder builder = new StringBuilder();
+        builder.append("Solution ").append(currentIndex + 1).append(" / ")
+            .append(currentSolutions.size()).append("  (coût = ")
+            .append(solution.cost()).append(")\n\n");
+        solution.assignment().forEach((friend, activity) ->
+            builder.append("  • ").append(friend).append(" → ").append(activity).append("\n"));
+
+        output.getItems().setAll(builder.toString());
+        statusLabel.setText("Solution affichée : " + (currentIndex + 1));
+        output.getSelectionModel().select(0);
+        javafx.animation.FadeTransition ft = new javafx.animation.FadeTransition(javafx.util.Duration.millis(350), output);
+        ft.setFromValue(0.0);
+        ft.setToValue(1.0);
+        ft.playFromStart();
     }
 
     private TableView<PreferenceRow> buildTable() {
