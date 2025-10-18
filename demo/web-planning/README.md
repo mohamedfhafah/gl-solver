@@ -25,6 +25,9 @@ Prototype Spring Boot exposant le solver GL via une API `/planifier`.
 - Utilise `alwaysReduceStrategy()` et `minimize(cost)` pour trouver un coût minimal.
 - Retourne l'affectation optimale ainsi que le coût dans la réponse JSON.
 
+## Tests
+- `./gradlew test` exécute le test unitaire `SolverServiceTest`.
+
 ## Améliorations possibles
 - Permettre de passer une matrice de coûts personnalisée via la requête.
 - Ajouter des contraintes supplémentaires (ex: préférences, disponibilités).
