@@ -18,6 +18,7 @@ application {
 
 dependencies {
     implementation(files("libs/gl-solver.jar")) // déposer le jar compilé du solver ici
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
 }
 
 tasks.withType<JavaCompile> {

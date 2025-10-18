@@ -15,9 +15,9 @@ Prototype d'interface JavaFX illustrant l'utilisation du solver GL pour organise
    ```
 
 ## Fonctionnement actuel
-- Les préférences (coûts) sont codées en dur côté Java (Alice/Bruno/Chloé/David et 4 activités).
+- Les préférences sont chargées depuis `src/main/resources/preferences.json` (amis, activités, coûts).
 - Le solver utilise `alwaysReduceStrategy` + `minimize(cout)` pour trouver la meilleure affectation.
-- Le résultat est affiché dans un `TextArea` (ex. « Alice -> Cinéma »).
+- Le résultat est affiché dans un `TextArea`.
 
 ## Pistes d'amélioration
 - Ajouter une table éditable pour modifier les préférences.

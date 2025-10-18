@@ -1,10 +1,9 @@
 package com.example.planning;
 
-import fr.univamu.solver.engine.Solver;
 import fr.univamu.solver.domain.Variable;
+import fr.univamu.solver.engine.Solver;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -15,24 +14,18 @@ import java.util.Optional;
  */
 public class SolverBridge {
 
-    public Optional<String> solveDemoProblem() {
-        List<String> friends = List.of("Alice", "Bruno", "Chloé", "David");
-        List<String> activities = List.of("Cinéma", "Escape Game", "Restaurant", "Karaoké");
+    private final PreferenceDataset dataset = PreferencesLoader.loadDefaultDataset();
 
-        int[][] costs = {
-            {1, 3, 4, 6},  // Alice
-            {4, 1, 5, 3},  // Bruno
-            {6, 2, 1, 4},  // Chloé
-            {3, 4, 2, 1}   // David
-        };
+    public Optional<String> solveDemoProblem() {
+        var activities = dataset.activities();
+        var friends = dataset.friends();
+        int friendCount = friends.size();
+        int activityCount = activities.size();
 
         var solver = new Solver();
         solver.alwaysReduceStrategy();
 
-        int friendCount = friends.size();
-        int activityCount = activities.size();
         Variable[][] matrix = new Variable[friendCount][activityCount];
-
         for (int f = 0; f < friendCount; f++) {
             for (int a = 0; a < activityCount; a++) {
                 matrix[f][a] = solver.newVar("F" + f + "A" + a, 0, 1);
@@ -60,15 +53,16 @@ public class SolverBridge {
         var costExpression = zero;
         for (int f = 0; f < friendCount; f++) {
             for (int a = 0; a < activityCount; a++) {
-                costExpression = solver.expression(costExpression, "+", matrix[f][a], "*", costs[f][a]);
+                String activityName = activities.get(a);
+                int cost = friends.get(f).preferences().getOrDefault(activityName, 5);
+                costExpression = solver.expression(costExpression, "+", matrix[f][a], "*", cost);
             }
         }
-        var costVar = solver.newVar("cout", 0, 100);
+        var costVar = solver.newVar("cout", 0, 1000);
         solver.addRelation(costExpression, "=", costVar);
-
         solver.minimize(costVar);
-        long solutions = solver.solve();
 
+        long solutions = solver.solve();
         if (solutions == 0) {
             return Optional.empty();
         }
@@ -85,7 +79,7 @@ public class SolverBridge {
                         .findFirst()
                         .ifPresent(assignmentVar -> {
                             if (assignmentVar.value() == 1) {
-                                assignment.put(friends.get(f), activities.get(a));
+                                assignment.put(friends.get(f).name(), activities.get(a));
                             }
                         });
                 }

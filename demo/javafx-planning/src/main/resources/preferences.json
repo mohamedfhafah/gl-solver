@@ -1,0 +1,9 @@
+{
+  "activities": ["Cinéma", "Escape Game", "Restaurant", "Karaoké"],
+  "friends": [
+    {"name": "Alice", "preferences": {"Cinéma": 1, "Escape Game": 3, "Restaurant": 4, "Karaoké": 6}},
+    {"name": "Bruno", "preferences": {"Cinéma": 4, "Escape Game": 1, "Restaurant": 5, "Karaoké": 3}},
+    {"name": "Chloé", "preferences": {"Cinéma": 6, "Escape Game": 2, "Restaurant": 1, "Karaoké": 4}},
+    {"name": "David", "preferences": {"Cinéma": 3, "Escape Game": 4, "Restaurant": 2, "Karaoké": 1}}
+  ]
+}

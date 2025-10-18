@@ -1,8 +1,8 @@
 package com.example.planningweb;
 
-import fr.univamu.solver.domain.Variable;
 import fr.univamu.solver.engine.Solver;
 
+import fr.univamu.solver.domain.Variable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,16 +14,19 @@ import java.util.Map;
  */
 public class SolverService {
 
+    private final PreferenceDataset dataset = PreferencesLoader.loadDefaultDataset();
+
     public Map<String, Object> solve(PlanningController.PlanningRequest request) {
         List<String> friends = request.friends();
         List<String> activities = request.activities();
         if (friends == null || activities == null || friends.isEmpty() || activities.isEmpty()) {
-            return Map.of("status", "error", "message", "Friends and activities must be provided");
+            friends = dataset.friends().stream().map(PreferenceDataset.PreferenceEntry::name).toList();
+            activities = dataset.activities();
         }
 
         int friendCount = friends.size();
         int activityCount = activities.size();
-        int[][] costs = buildDefaultCosts(friendCount, activityCount);
+        int[][] costs = buildCostsMatrix(friends, activities);
 
         var solver = new Solver();
         solver.alwaysReduceStrategy();
@@ -100,11 +103,18 @@ public class SolverService {
         return response;
     }
 
-    private int[][] buildDefaultCosts(int friendCount, int activityCount) {
-        int[][] costs = new int[friendCount][activityCount];
-        for (int f = 0; f < friendCount; f++) {
-            for (int a = 0; a < activityCount; a++) {
-                costs[f][a] = (f + a) % 5 + 1;
+    private int[][] buildCostsMatrix(List<String> friends, List<String> activities) {
+        int[][] costs = new int[friends.size()][activities.size()];
+        for (int f = 0; f < friends.size(); f++) {
+            String friendName = friends.get(f);
+            var entry = dataset.friends().stream()
+                .filter(e -> e.name().equals(friendName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Friend not found in dataset: " + friendName));
+
+            for (int a = 0; a < activities.size(); a++) {
+                String activity = activities.get(a);
+                costs[f][a] = entry.preferences().getOrDefault(activity, 5);
             }
         }
         return costs;
