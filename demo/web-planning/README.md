@@ -13,7 +13,8 @@ Prototype Spring Boot exposant le solver GL via une API `/planifier`.
    ```bash
    ./gradlew bootRun
    ```
-3. Tester l'API (exemple) :
+3. Ouvrir l'interface web : [http://localhost:8080/](http://localhost:8080/)
+4. Tester l'API directement (exemple) :
    ```bash
    curl -X POST http://localhost:8080/planifier \
         -H "Content-Type: application/json" \

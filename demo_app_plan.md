@@ -42,14 +42,14 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
    - [x] Créer module `demo/web-planning` avec endpoint `/planifier`
    - [x] Implémenter `SolverService` avec le solver réel
 2. **Frontend**
-   - [ ] Concevoir une page web (formulaire préférences, bouton « Calculer », affichage résultats)
+   - [x] Concevoir une page web (formulaire préférences, bouton « Calculer », affichage résultats)
    - [ ] Ajouter visualisation (cartes, jauges, historique)
 3. **Fonctionnalités bonus**
    - [ ] Comparaison multi-objectifs (coût vs satisfaction)
    - [ ] Visualisation du nombre de nœuds explorés
 4. **Intégration solver**
    - [ ] Centraliser les mappings données → solver (service partagé)
-   - [ ] Ecrire des tests unitaires sur le service/contrôleur
+   - [x] Ecrire des tests unitaires sur le service/contrôleur
 
 ---
 

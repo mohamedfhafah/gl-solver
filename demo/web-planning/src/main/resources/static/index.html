@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Planning de soirée – Démo Web</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; background: #f7f7f7; }
+        h1 { color: #333; }
+        label { display: block; margin-top: 1rem; font-weight: bold; }
+        textarea { width: 100%; height: 60px; }
+        button { margin-top: 1rem; padding: 0.5rem 1rem; font-size: 1rem; }
+        .result { margin-top: 2rem; padding: 1rem; background: #fff; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .assignment { margin-top: 1rem; }
+        .assignment div { padding: 0.3rem 0; }
+        .error { color: #b71c1c; }
+    </style>
+</head>
+<body>
+    <h1>Planifier la soirée</h1>
+    <p>Listez les amis et les activités (séparées par des virgules). Laissez vide pour utiliser le dataset par défaut.</p>
+    <label>Amis</label>
+    <textarea id="friends" placeholder="Alice, Bruno, Chloé, David"></textarea>
+    <label>Activités</label>
+    <textarea id="activities" placeholder="Cinéma, Escape Game, Restaurant, Karaoké"></textarea>
+    <button id="submit">Calculer</button>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        document.getElementById('submit').addEventListener('click', async () => {
+            const friendsInput = document.getElementById('friends').value.trim();
+            const activitiesInput = document.getElementById('activities').value.trim();
+
+            const friends = friendsInput ? friendsInput.split(',').map(v => v.trim()).filter(Boolean) : [];
+            const activities = activitiesInput ? activitiesInput.split(',').map(v => v.trim()).filter(Boolean) : [];
+
+            const payload = { friends, activities };
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Calcul en cours…';
+
+            try {
+                const response = await fetch('/planifier', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    resultDiv.innerHTML = `<h2>Coût minimal : ${data.optimalCost}</h2>`;
+                    const container = document.createElement('div');
+                    container.className = 'assignment';
+                    Object.entries(data.assignment).forEach(([friend, activity]) => {
+                        const line = document.createElement('div');
+                        line.textContent = `${friend} → ${activity}`;
+                        container.appendChild(line);
+                    });
+                    resultDiv.appendChild(container);
+                } else if (data.status === 'no_solution') {
+                    resultDiv.innerHTML = '<p class="error">Aucune solution trouvée</p>';
+                } else {
+                    resultDiv.innerHTML = `<p class="error">${data.message || 'Erreur inattendue'}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">Erreur : ${error}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
