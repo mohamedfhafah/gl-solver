@@ -15,7 +15,7 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
 - [x] Poser la structure de base :
   - dossier `demo/javafx-planning` (Gradle + JavaFX, jar attendu dans `libs/`)
   - dossier `demo/web-planning` (Gradle + Spring Boot, jar attendu dans `libs/`)
-- [ ] Définir les jeux de données (amis, activités, préférences, contraintes)
+- [x] Définir les jeux de données (amis, activités, préférences, contraintes)
 
 ---
 
