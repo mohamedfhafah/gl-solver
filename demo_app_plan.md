@@ -40,7 +40,7 @@ Créer deux démonstrations ludiques et indépendantes du dépôt académique of
 ## 3. Démo Web – API + Interface
 1. **Backend Spring Boot**
    - [x] Créer module `demo/web-planning` avec endpoint `/planifier`
-   - [ ] Implémenter `SolverService` avec le solver réel
+   - [x] Implémenter `SolverService` avec le solver réel
 2. **Frontend**
    - [ ] Concevoir une page web (formulaire préférences, bouton « Calculer », affichage résultats)
    - [ ] Ajouter visualisation (cartes, jauges, historique)

@@ -1,26 +1,31 @@
 # Démo Web – Planning via API
 
-Prototype Spring Boot qui expose le solver GL à travers une API `/planifier`.
+Prototype Spring Boot exposant le solver GL via une API `/planifier`.
 
 ## Pré-requis
 - Java 17+
 - Gradle 8+
-- Jar du solver (`gl-solver.jar`) généré avec `./gradlew jar` dans le projet principal.
+- Jar du solver : `demo/web-planning/libs/gl-solver.jar`
 
 ## Installation
-1. Copier le jar dans `demo/web-planning/libs/gl-solver.jar` (dossier ignoré par Git).
-2. Depuis ce répertoire :
+1. Copier le jar généré (`build/libs/GL-Solver-1.0-SNAPSHOT.jar`) dans `demo/web-planning/libs/gl-solver.jar`.
+2. Lancer l'application :
    ```bash
    ./gradlew bootRun
    ```
-3. Appeler l'API :
+3. Tester l'API (exemple) :
    ```bash
    curl -X POST http://localhost:8080/planifier \
         -H "Content-Type: application/json" \
-        -d '{"friends":["Alice","Bruno"],"activities":["Cinéma","Escape Game"]}'
+        -d '{"friends":["Alice","Bruno"],"activities":["Cinéma","Escape"]}'
    ```
 
-## Personnalisation
-- Implémenter `SolverService.solve()` pour construire le vrai modèle d'affectation.
-- Ajouter des contraintes (disponibilités, préférences, coûts).
-- Développer un front-end (React/Vue/HTML) pour consommer l'API.
+## Fonctionnement
+- `SolverService` construit un problème d'affectation (amis vs activités).
+- Utilise `alwaysReduceStrategy()` et `minimize(cost)` pour trouver un coût minimal.
+- Retourne l'affectation optimale ainsi que le coût dans la réponse JSON.
+
+## Améliorations possibles
+- Permettre de passer une matrice de coûts personnalisée via la requête.
+- Ajouter des contraintes supplémentaires (ex: préférences, disponibilités).
+- Ajouter une interface web pour saisir les données et visualiser le résultat.
